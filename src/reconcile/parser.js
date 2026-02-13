@@ -10,6 +10,7 @@ const HEADER_KEYWORDS = [
   "sku", "item", "product", "part", "material", "article", "upc", "ordered",
   "price", "cost", "amount", "rate", "each", "total",
   "qty", "quantity", "description", "name",
+  "unit", "status", "notes", "rule", "due",
 ];
 
 /**
@@ -108,15 +109,21 @@ function findHeaderRow(rawRows) {
     }
   }
 
-  // If no row got 2+ keyword hits, fall back to first row with 3+ non-empty short cells
+  // If no row got 2+ keyword hits, fall back to row with the MOST non-empty short cells
   if (bestScore === -1) {
+    let fallbackIdx = 0;
+    let fallbackMax = 0;
     for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
       if (!row) continue;
       const nonEmpty = row.filter((c) => c != null && String(c).trim() !== "");
       const shortCells = nonEmpty.filter((c) => String(c).trim().length <= 40);
-      if (shortCells.length >= 3) return i;
+      if (shortCells.length > fallbackMax) {
+        fallbackMax = shortCells.length;
+        fallbackIdx = i;
+      }
     }
+    return fallbackIdx;
   }
 
   return bestIdx;
