@@ -1,6 +1,7 @@
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import { detectColumns } from "./detector";
 
 // Disable worker — runs synchronously, fine for small PO documents
 pdfjsLib.GlobalWorkerOptions.workerSrc = "";
@@ -10,12 +11,12 @@ const HEADER_KEYWORDS = [
   "sku", "item", "product", "part", "material", "article", "upc", "ordered",
   "price", "cost", "amount", "rate", "each", "total",
   "qty", "quantity", "description", "name",
-  "unit", "status", "notes", "rule", "due",
+  "unit",
 ];
 
 /**
  * Parse an uploaded file into { headers: string[], rows: Record<string, string>[] }
- * Automatically detects the real header row, skipping instruction/metadata rows at the top.
+ * Tries multiple candidate header rows until one yields recognizable SKU+Price columns.
  */
 export async function parseFile(file) {
   const ext = file.name.split(".").pop().toLowerCase();
@@ -40,16 +41,35 @@ export async function parseFile(file) {
     throw new Error("File needs at least a header row and one data row.");
   }
 
-  // Find the real header row by scanning for recognizable column names
-  const headerIdx = findHeaderRow(rawRows);
-  const headers = rawRows[headerIdx].map((h) => String(h).trim()).filter(Boolean);
+  // Get ranked candidate header rows
+  const candidates = rankHeaderCandidates(rawRows);
+
+  // Try each candidate — use the first one where column detection finds SKU + Price
+  for (const idx of candidates) {
+    const headers = rawRows[idx].map((h) => String(h).trim()).filter(Boolean);
+    if (headers.length < 2) continue;
+
+    const detected = detectColumns(headers);
+    if (detected.sku && detected.price) {
+      // Found a header row with recognizable columns
+      const rows = buildRows(rawRows, idx, headers);
+      return { headers, rows };
+    }
+  }
+
+  // No candidate had detectable SKU+Price — use the best-scoring one for manual selection
+  const bestIdx = candidates[0] || 0;
+  const headers = rawRows[bestIdx].map((h) => String(h).trim()).filter(Boolean);
 
   if (headers.length < 2) {
     throw new Error("Could not find a valid header row in the file.");
   }
 
-  // Everything after the header row is data
-  const rows = rawRows.slice(headerIdx + 1)
+  return { headers, rows: buildRows(rawRows, bestIdx, headers) };
+}
+
+function buildRows(rawRows, headerIdx, headers) {
+  return rawRows.slice(headerIdx + 1)
     .filter((row) => row.some((cell) => cell != null && String(cell).trim() !== ""))
     .map((row) => {
       const obj = {};
@@ -58,18 +78,14 @@ export async function parseFile(file) {
       });
       return obj;
     });
-
-  return { headers, rows };
 }
 
 /**
- * Scan rows to find which one is the actual header row.
- * Header rows have: multiple non-empty short cells, with recognized keywords.
- * Instruction rows have: 1-2 cells with long text (sentences).
+ * Rank all rows by how likely they are to be a data table header.
+ * Returns array of row indices, best first.
  */
-function findHeaderRow(rawRows) {
-  let bestIdx = 0;
-  let bestScore = -1;
+function rankHeaderCandidates(rawRows) {
+  const scored = [];
 
   for (let i = 0; i < rawRows.length; i++) {
     const row = rawRows[i];
@@ -83,50 +99,26 @@ function findHeaderRow(rawRows) {
 
     for (const cell of nonEmpty) {
       const val = String(cell).toLowerCase().trim();
-
-      // Column headers are short (under 40 chars typically)
-      if (val.length <= 40) shortCells++;
-
-      // Only count keyword matches in short cells (skip sentences)
-      if (val.length <= 40) {
-        for (const keyword of HEADER_KEYWORDS) {
-          if (val.includes(keyword)) {
-            keywordHits++;
-            break;
-          }
+      if (val.length > 40) continue; // skip long text (instructions/sentences)
+      shortCells++;
+      for (const keyword of HEADER_KEYWORDS) {
+        if (val.includes(keyword)) {
+          keywordHits++;
+          break;
         }
       }
     }
 
-    // Score: keyword matches + bonus for having many short non-empty cells
-    // A real header row has 3+ short cells with 2+ keyword hits
-    const score = keywordHits * 3 + shortCells;
-
-    // Require at least 2 keyword hits to be considered a header
-    if (keywordHits >= 2 && score > bestScore) {
-      bestScore = score;
-      bestIdx = i;
-    }
+    // Score heavily weights: keyword matches + number of short columns
+    // A real data header has many columns (5+) with several keyword matches
+    const score = keywordHits * 10 + shortCells;
+    scored.push({ idx: i, score, shortCells, keywordHits });
   }
 
-  // If no row got 2+ keyword hits, fall back to row with the MOST non-empty short cells
-  if (bestScore === -1) {
-    let fallbackIdx = 0;
-    let fallbackMax = 0;
-    for (let i = 0; i < rawRows.length; i++) {
-      const row = rawRows[i];
-      if (!row) continue;
-      const nonEmpty = row.filter((c) => c != null && String(c).trim() !== "");
-      const shortCells = nonEmpty.filter((c) => String(c).trim().length <= 40);
-      if (shortCells.length > fallbackMax) {
-        fallbackMax = shortCells.length;
-        fallbackIdx = i;
-      }
-    }
-    return fallbackIdx;
-  }
+  // Sort by score descending, then by number of short cells descending
+  scored.sort((a, b) => b.score - a.score || b.shortCells - a.shortCells);
 
-  return bestIdx;
+  return scored.map((s) => s.idx);
 }
 
 function parseCSVRaw(file) {
