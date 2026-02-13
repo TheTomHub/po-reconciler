@@ -5,30 +5,102 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 // Disable worker — runs synchronously, fine for small PO documents
 pdfjsLib.GlobalWorkerOptions.workerSrc = "";
 
+// Known column name patterns to identify the real header row
+const HEADER_KEYWORDS = [
+  "sku", "item", "product", "part", "material", "article", "upc", "ordered",
+  "price", "cost", "amount", "rate", "each", "total",
+  "qty", "quantity", "description", "name",
+];
+
 /**
  * Parse an uploaded file into { headers: string[], rows: Record<string, string>[] }
+ * Automatically detects the real header row, skipping instruction/metadata rows at the top.
  */
 export async function parseFile(file) {
   const ext = file.name.split(".").pop().toLowerCase();
 
+  let rawRows;
   switch (ext) {
     case "csv":
     case "tsv":
-      return parseCSV(file);
+      rawRows = await parseCSVRaw(file);
+      break;
     case "xlsx":
     case "xls":
-      return parseExcel(file);
+      rawRows = await parseExcelRaw(file);
+      break;
     case "pdf":
       return parsePDF(file);
     default:
       throw new Error(`Unsupported file type: .${ext}. Please use .xlsx, .csv, or .pdf.`);
   }
+
+  if (rawRows.length < 2) {
+    throw new Error("File needs at least a header row and one data row.");
+  }
+
+  // Find the real header row by scanning for recognizable column names
+  const headerIdx = findHeaderRow(rawRows);
+  const headers = rawRows[headerIdx].map((h) => String(h).trim()).filter(Boolean);
+
+  if (headers.length < 2) {
+    throw new Error("Could not find a valid header row in the file.");
+  }
+
+  // Everything after the header row is data
+  const rows = rawRows.slice(headerIdx + 1)
+    .filter((row) => row.some((cell) => cell != null && String(cell).trim() !== ""))
+    .map((row) => {
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = row[i] != null ? String(row[i]) : "";
+      });
+      return obj;
+    });
+
+  return { headers, rows };
 }
 
-function parseCSV(file) {
+/**
+ * Scan rows to find which one is the actual header row.
+ * Looks for rows containing multiple recognized column-name keywords.
+ */
+function findHeaderRow(rawRows) {
+  // Check up to first 30 rows for a header
+  const limit = Math.min(rawRows.length, 30);
+
+  let bestIdx = 0;
+  let bestScore = 0;
+
+  for (let i = 0; i < limit; i++) {
+    const row = rawRows[i];
+    if (!row || row.length < 2) continue;
+
+    let score = 0;
+    for (const cell of row) {
+      const val = String(cell).toLowerCase().trim();
+      if (!val) continue;
+      for (const keyword of HEADER_KEYWORDS) {
+        if (val.includes(keyword)) {
+          score++;
+          break; // one match per cell is enough
+        }
+      }
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
+  }
+
+  return bestIdx;
+}
+
+function parseCSVRaw(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
-      header: true,
+      header: false,
       skipEmptyLines: true,
       dynamicTyping: false,
       complete(results) {
@@ -36,12 +108,7 @@ function parseCSV(file) {
           reject(new Error("Could not parse CSV file. Check the file format."));
           return;
         }
-        const headers = results.meta.fields || [];
-        if (headers.length === 0) {
-          reject(new Error("CSV file has no headers. First row should contain column names."));
-          return;
-        }
-        resolve({ headers, rows: results.data });
+        resolve(results.data);
       },
       error(err) {
         reject(new Error(`Could not read file. ${err.message}`));
@@ -50,7 +117,7 @@ function parseCSV(file) {
   });
 }
 
-async function parseExcel(file) {
+async function parseExcelRaw(file) {
   const buffer = await file.arrayBuffer();
   let workbook;
   try {
@@ -65,24 +132,7 @@ async function parseExcel(file) {
   }
 
   const sheet = workbook.Sheets[sheetName];
-  const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-
-  if (data.length < 2) {
-    throw new Error("Excel file needs at least a header row and one data row.");
-  }
-
-  const headers = data[0].map((h) => String(h).trim());
-  const rows = data.slice(1)
-    .filter((row) => row.some((cell) => cell !== ""))
-    .map((row) => {
-      const obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = row[i] != null ? String(row[i]) : "";
-      });
-      return obj;
-    });
-
-  return { headers, rows };
+  return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 }
 
 async function parsePDF(file) {
@@ -106,7 +156,6 @@ async function parsePDF(file) {
     throw new Error("Cannot parse this PDF. Please export to Excel/CSV first.");
   }
 
-  // Try to detect tabular data: find a line with multiple tab/multi-space separators
   const delimiter = detectPdfDelimiter(lines);
   if (!delimiter) {
     throw new Error("Cannot parse this PDF. No tabular data detected. Please export to Excel/CSV first.");
@@ -139,12 +188,10 @@ async function parsePDF(file) {
 }
 
 function detectPdfDelimiter(lines) {
-  // Try tab first, then multi-space, then pipe
   const delimiters = ["\t", /\s{2,}/, "|"];
   for (const d of delimiters) {
     const headerParts = lines[0].split(d).filter(Boolean);
     if (headerParts.length >= 2) {
-      // Check at least one data line also splits similarly
       for (let i = 1; i < Math.min(lines.length, 5); i++) {
         const parts = lines[i].split(d).filter(Boolean);
         if (parts.length >= headerParts.length - 1) {
