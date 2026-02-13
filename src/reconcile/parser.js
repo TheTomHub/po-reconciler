@@ -63,34 +63,59 @@ export async function parseFile(file) {
 
 /**
  * Scan rows to find which one is the actual header row.
- * Looks for rows containing multiple recognized column-name keywords.
+ * Header rows have: multiple non-empty short cells, with recognized keywords.
+ * Instruction rows have: 1-2 cells with long text (sentences).
  */
 function findHeaderRow(rawRows) {
-  // Scan all rows — header could be far down in files with lots of instructions
-  const limit = rawRows.length;
-
   let bestIdx = 0;
-  let bestScore = 0;
+  let bestScore = -1;
 
-  for (let i = 0; i < limit; i++) {
+  for (let i = 0; i < rawRows.length; i++) {
     const row = rawRows[i];
-    if (!row || row.length < 2) continue;
+    if (!row) continue;
 
-    let score = 0;
-    for (const cell of row) {
+    const nonEmpty = row.filter((c) => c != null && String(c).trim() !== "");
+    if (nonEmpty.length < 2) continue;
+
+    let keywordHits = 0;
+    let shortCells = 0;
+
+    for (const cell of nonEmpty) {
       const val = String(cell).toLowerCase().trim();
-      if (!val) continue;
-      for (const keyword of HEADER_KEYWORDS) {
-        if (val.includes(keyword)) {
-          score++;
-          break; // one match per cell is enough
+
+      // Column headers are short (under 40 chars typically)
+      if (val.length <= 40) shortCells++;
+
+      // Only count keyword matches in short cells (skip sentences)
+      if (val.length <= 40) {
+        for (const keyword of HEADER_KEYWORDS) {
+          if (val.includes(keyword)) {
+            keywordHits++;
+            break;
+          }
         }
       }
     }
 
-    if (score > bestScore) {
+    // Score: keyword matches + bonus for having many short non-empty cells
+    // A real header row has 3+ short cells with 2+ keyword hits
+    const score = keywordHits * 3 + shortCells;
+
+    // Require at least 2 keyword hits to be considered a header
+    if (keywordHits >= 2 && score > bestScore) {
       bestScore = score;
       bestIdx = i;
+    }
+  }
+
+  // If no row got 2+ keyword hits, fall back to first row with 3+ non-empty short cells
+  if (bestScore === -1) {
+    for (let i = 0; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (!row) continue;
+      const nonEmpty = row.filter((c) => c != null && String(c).trim() !== "");
+      const shortCells = nonEmpty.filter((c) => String(c).trim().length <= 40);
+      if (shortCells.length >= 3) return i;
     }
   }
 
