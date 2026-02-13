@@ -9,6 +9,8 @@ const SKU_ALIASES = [
   "product id",
   "article",
   "upc",
+  "ordered item",
+  "item",
 ];
 
 const PRICE_ALIASES = [
