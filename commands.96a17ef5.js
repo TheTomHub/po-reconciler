@@ -1,0 +1,1 @@
+Office.onReady(()=>{}),Office.actions=Office.actions||{},Office.actions.associate("reconcileFromRibbon",function(t){Office.context.ui.displayDialogAsync("https://localhost:3000/taskpane.html",{height:60,width:30},i=>{i.status,Office.AsyncResultStatus.Failed,t.completed()})});
