@@ -12,7 +12,7 @@ module.exports = (env, argv) => {
     },
     output: {
       path: path.resolve(__dirname, "dist"),
-      filename: "[name].bundle.js",
+      filename: "[name].[contenthash:8].js",
       clean: true,
     },
     resolve: {
