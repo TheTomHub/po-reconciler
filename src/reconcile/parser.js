@@ -66,8 +66,8 @@ export async function parseFile(file) {
  * Looks for rows containing multiple recognized column-name keywords.
  */
 function findHeaderRow(rawRows) {
-  // Check up to first 30 rows for a header
-  const limit = Math.min(rawRows.length, 30);
+  // Scan all rows — header could be far down in files with lots of instructions
+  const limit = rawRows.length;
 
   let bestIdx = 0;
   let bestScore = 0;
