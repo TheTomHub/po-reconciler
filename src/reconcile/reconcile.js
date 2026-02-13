@@ -74,7 +74,35 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
       continue;
     }
 
-    const oracle = oracleMap.get(normSku);
+    // Try exact match first, then prefix match (customer core number → Oracle full SKU)
+    let oracle = oracleMap.get(normSku);
+    let matchType = "exact";
+
+    if (!oracle) {
+      const prefixMatches = findPrefixMatches(normSku, oracleMap);
+
+      if (prefixMatches.length === 1) {
+        // Single prefix match — use it
+        oracle = prefixMatches[0].entry;
+        matchType = "prefix";
+      } else if (prefixMatches.length > 1) {
+        // Multiple Oracle SKUs match this core number — flag for manual review
+        const matchedSkus = prefixMatches.map((m) => m.sku).join(", ");
+        warnings++;
+        resultRows.push({
+          status: "Warning",
+          sku: rawSku,
+          name: poName,
+          oraclePrice: null,
+          poPrice,
+          diff: null,
+          pctDiff: null,
+          action: `Multiple Oracle matches: ${matchedSkus}`,
+          duplicate: isDuplicate,
+        });
+        continue;
+      }
+    }
 
     if (!oracle) {
       exceptions++;
@@ -134,12 +162,13 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     resultRows.push({
       status,
       sku: rawSku,
+      oracleSku: matchType === "prefix" ? denormalizeSku(findPrefixMatches(normSku, oracleMap)[0].sku, oracleData.rows, oracleColumns.sku) : null,
       name: oracle.name || poName,
       oraclePrice: oracle.price,
       poPrice,
       diff,
       pctDiff,
-      action,
+      action: matchType === "prefix" && action === "OK" ? "OK (prefix match)" : action,
       duplicate: isDuplicate,
     });
   }
@@ -192,6 +221,20 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     },
     rows: resultRows,
   };
+}
+
+/**
+ * Find Oracle SKUs that start with the given PO core number.
+ * e.g. PO "1234" matches Oracle "1234V012", "1234V013"
+ */
+function findPrefixMatches(normPoSku, oracleMap) {
+  const results = [];
+  for (const [oracleSku, entry] of oracleMap) {
+    if (oracleSku.startsWith(normPoSku) && oracleSku !== normPoSku) {
+      results.push({ sku: oracleSku, entry });
+    }
+  }
+  return results;
 }
 
 function normalizeSku(sku) {

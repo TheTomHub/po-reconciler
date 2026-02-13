@@ -382,7 +382,7 @@ function renderBrowserResultsTable(results) {
 
     html += `<tr class="${statusClass}">`;
     html += `<td>${label}</td>`;
-    html += `<td>${row.sku}</td>`;
+    html += `<td>${row.oracleSku ? `${row.sku} → ${row.oracleSku}` : row.sku}</td>`;
     html += `<td>${row.name || ""}</td>`;
     html += `<td>${row.oraclePrice != null ? formatCurrency(row.oraclePrice) : ""}</td>`;
     html += `<td>${row.poPrice != null ? formatCurrency(row.poPrice) : ""}</td>`;

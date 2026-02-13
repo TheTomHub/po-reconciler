@@ -86,7 +86,7 @@ export async function writeResultsSheet(results, tolerance) {
     if (results.rows.length > 0) {
       const dataValues = results.rows.map((row) => [
         row.duplicate ? `${row.status} (DUP)` : row.status,
-        row.sku,
+        row.oracleSku ? `${row.sku} → ${row.oracleSku}` : row.sku,
         row.name || "",
         row.oraclePrice != null ? row.oraclePrice : "",
         row.poPrice != null ? row.poPrice : "",
