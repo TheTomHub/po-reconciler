@@ -38,7 +38,7 @@ PO reconciliation for ${poNumber} has been completed. Please see the summary bel
 
 ${summary.exceptions > 0 ? `Top exceptions:\n${topLines.join("\n")}\n${exceptionRows.length > 3 ? `  ... and ${exceptionRows.length - 3} more\n` : ""}` : "All items matched within tolerance."}
 Full reconciliation details are in the Recon sheet attached to this workbook.
-
+${summary.exceptions > 0 ? "\nCredit note and corrected re-invoice sheets have been generated in this workbook.\n" : ""}
 Please review and advise on next steps.
 
 Best regards`;

@@ -23,6 +23,7 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
     erpMap.set(normSku, {
       price: parseNumber(row[erpColumns.price]),
       name: erpColumns.name ? row[erpColumns.name] || "" : "",
+      qty: erpColumns.qty ? parseNumber(row[erpColumns.qty]) || 1 : 1,
       originalRow: row,
       matched: false,
     });
@@ -56,6 +57,7 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
     const normSku = normalizeSku(rawSku);
     const poPrice = parseNumber(row[poColumns.price]);
     const poName = poColumns.name ? row[poColumns.name] || "" : "";
+    const poQty = poColumns.qty ? parseNumber(row[poColumns.qty]) || 1 : 1;
     const isDuplicate = poDuplicates.has(normSku) || erpDuplicates.has(normSku);
 
     if (poPrice === null) {
@@ -70,6 +72,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
         pctDiff: null,
         action: "Non-numeric price — skipped",
         duplicate: isDuplicate,
+        poQty,
+        erpQty: null,
+        lineTotal: null,
       });
       continue;
     }
@@ -99,6 +104,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
           pctDiff: null,
           action: `Multiple ERP matches: ${matchedSkus}`,
           duplicate: isDuplicate,
+          poQty,
+          erpQty: null,
+          lineTotal: round(poPrice * poQty),
         });
         continue;
       }
@@ -116,6 +124,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
         pctDiff: null,
         action: "Review — SKU not found in ERP",
         duplicate: isDuplicate,
+        poQty,
+        erpQty: null,
+        lineTotal: round(poPrice * poQty),
       });
       continue;
     }
@@ -134,6 +145,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
         pctDiff: null,
         action: "Non-numeric ERP price",
         duplicate: isDuplicate,
+        poQty,
+        erpQty: oracle.qty,
+        lineTotal: round(poPrice * poQty),
       });
       continue;
     }
@@ -170,6 +184,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
       pctDiff,
       action: matchType === "prefix" && action === "OK" ? "OK (prefix match)" : action,
       duplicate: isDuplicate,
+      poQty,
+      erpQty: oracle.qty,
+      lineTotal: round(poPrice * poQty),
     });
   }
 
@@ -187,6 +204,9 @@ export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance })
       pctDiff: null,
       action: "Review — SKU not in PO",
       duplicate: erpDuplicates.has(normSku),
+      poQty: null,
+      erpQty: oracle.qty,
+      lineTotal: null,
     });
   }
 

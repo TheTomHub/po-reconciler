@@ -35,6 +35,19 @@ const NAME_ALIASES = [
   "product",
 ];
 
+const QTY_ALIASES = [
+  "qty",
+  "quantity",
+  "order qty",
+  "ordered qty",
+  "unit qty",
+  "units",
+  "ordered",
+  "order quantity",
+  "pcs",
+  "ea",
+];
+
 /**
  * Auto-detect SKU, Price, and optional Name columns from headers.
  * Returns { sku: string|null, price: string|null, name: string|null }
@@ -44,6 +57,7 @@ export function detectColumns(headers) {
     sku: findColumn(headers, SKU_ALIASES),
     price: findColumn(headers, PRICE_ALIASES),
     name: findColumn(headers, NAME_ALIASES),
+    qty: findColumn(headers, QTY_ALIASES),
   };
 }
 
