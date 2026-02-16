@@ -72,20 +72,9 @@ function initUI(browserMode) {
     erpNameCol: document.getElementById("erp-name-col"),
     applyErpColumns: document.getElementById("apply-erp-columns"),
     // Browser mode elements
-    erpRangeBody: document.getElementById("erp-range-body"),
-    erpFileBody: document.getElementById("erp-file-body"),
-    erpFileInput: document.getElementById("erp-file-input"),
-    erpFileStatus: document.getElementById("erp-file-status"),
     browserResultsTable: document.getElementById("browser-results-table"),
     resultsTable: document.getElementById("results-table"),
   };
-
-  // In browser mode, swap "Select Range" for file upload
-  if (browserMode) {
-    els.erpRangeBody.hidden = true;
-    els.erpFileBody.hidden = false;
-    els.erpFileInput.addEventListener("change", handleErpFileUpload);
-  }
 
   // Event listeners
   els.poFileInput.addEventListener("change", handleFileUpload);
@@ -127,38 +116,6 @@ async function handleFileUpload(e) {
     state.poData = null;
     state.poColumns = null;
     setStatus(els.poStatus, "No file selected", "");
-    showError(err.message);
-  }
-}
-
-// --- ERP File Upload (browser mode) ---
-
-async function handleErpFileUpload(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  hideError();
-  setStatus(els.erpFileStatus, "Parsing...", "");
-
-  try {
-    state.erpData = await parseFile(file);
-    const columns = detectColumns(state.erpData.headers);
-
-    if (!columns.sku || !columns.price) {
-      showManualColumnSelection("erp", state.erpData.headers);
-      setStatus(els.erpFileStatus, `${file.name} — ${state.erpData.headers.length} cols, ${state.erpData.rows.length} rows — select columns`, "");
-      setStatus(els.erpStatus, `${file.name} — select columns below`, "");
-    } else {
-      state.erpColumns = columns;
-      els.manualColumnsErp.hidden = true;
-      setStatus(els.erpFileStatus, `${file.name} (${state.erpData.rows.length} rows)`, "success");
-      setStatus(els.erpStatus, `${state.erpData.rows.length} rows loaded`, "success");
-    }
-    updateReconcileButton();
-  } catch (err) {
-    state.erpData = null;
-    state.erpColumns = null;
-    setStatus(els.erpFileStatus, "No file selected", "");
     showError(err.message);
   }
 }
