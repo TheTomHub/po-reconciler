@@ -68,22 +68,6 @@
                     <SourceLocation resid="Taskpane.Url"/>
                   </Action>
                 </Control>
-
-                <Control xsi:type="Button" id="ReconcileButton">
-                  <Label resid="ReconcileButton.Label"/>
-                  <Supertip>
-                    <Title resid="ReconcileButton.Label"/>
-                    <Description resid="ReconcileButton.Tooltip"/>
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16"/>
-                    <bt:Image size="32" resid="Icon.32x32"/>
-                    <bt:Image size="80" resid="Icon.64x64"/>
-                  </Icon>
-                  <Action xsi:type="ExecuteFunction">
-                    <FunctionName>reconcileFromRibbon</FunctionName>
-                  </Action>
-                </Control>
               </Group>
               <Label resid="TabLabel"/>
             </CustomTab>
@@ -108,13 +92,11 @@
         <bt:String id="GetStarted.Title" DefaultValue="PO Reconciler"/>
         <bt:String id="CommandsGroup.Label" DefaultValue="Reconciliation"/>
         <bt:String id="TaskpaneButton.Label" DefaultValue="Open Reconciler"/>
-        <bt:String id="ReconcileButton.Label" DefaultValue="Quick Reconcile"/>
         <bt:String id="TabLabel" DefaultValue="PO Reconciler"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Reconcile customer POs against ERP exports with a single click."/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open the PO Reconciler task pane"/>
-        <bt:String id="ReconcileButton.Tooltip" DefaultValue="Run reconciliation with current settings"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
