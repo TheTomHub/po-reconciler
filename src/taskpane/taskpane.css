@@ -30,6 +30,71 @@ header h1 {
   color: #1f4e79;
 }
 
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid #edebe9;
+  margin-bottom: 16px;
+  gap: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #605e5c;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover:not(:disabled) {
+  color: #323130;
+}
+
+.tab.active {
+  color: #1f4e79;
+  border-bottom-color: #1f4e79;
+  font-weight: 600;
+}
+
+.tab:disabled {
+  color: #c8c6c4;
+  cursor: not-allowed;
+}
+
+.tab.tab-notify::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #a4262c;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Tab panels */
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* Hint text for empty/locked tabs */
+.tab-hint {
+  font-size: 12px;
+  color: #797775;
+  text-align: center;
+  padding: 24px 16px;
+}
+
 /* Steps */
 .step {
   background: #fff;

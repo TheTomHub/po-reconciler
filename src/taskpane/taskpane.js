@@ -4,6 +4,8 @@ import { detectColumns } from "../reconcile/detector";
 import { reconcile } from "../reconcile/reconcile";
 import { writeResultsSheet } from "../reconcile/results";
 import { generateEmailDraft, buildMailtoLink } from "../email/email";
+import { generateCreditNote, generateCorrectedInvoice } from "../reconcile/creditnote";
+import { writeCreditNoteSheet, writeReInvoiceSheet } from "../reconcile/creditnote-results";
 import { formatCurrency } from "../utils/format";
 
 /* global Office, Excel */
@@ -53,6 +55,8 @@ function initUI(browserMode) {
     resultExceptions: document.getElementById("result-exceptions"),
     resultExposure: document.getElementById("result-exposure"),
     emailBtn: document.getElementById("email-btn"),
+    creditNoteBtn: document.getElementById("credit-note-btn"),
+    reinvoiceBtn: document.getElementById("reinvoice-btn"),
     emailSection: document.getElementById("email-section"),
     emailDraft: document.getElementById("email-draft"),
     copyEmailBtn: document.getElementById("copy-email-btn"),
@@ -65,15 +69,25 @@ function initUI(browserMode) {
     poSkuCol: document.getElementById("po-sku-col"),
     poPriceCol: document.getElementById("po-price-col"),
     poNameCol: document.getElementById("po-name-col"),
+    poQtyCol: document.getElementById("po-qty-col"),
     applyPoColumns: document.getElementById("apply-po-columns"),
     manualColumnsErp: document.getElementById("manual-columns-erp"),
     erpSkuCol: document.getElementById("erp-sku-col"),
     erpPriceCol: document.getElementById("erp-price-col"),
     erpNameCol: document.getElementById("erp-name-col"),
+    erpQtyCol: document.getElementById("erp-qty-col"),
     applyErpColumns: document.getElementById("apply-erp-columns"),
     // Browser mode elements
     browserResultsTable: document.getElementById("browser-results-table"),
     resultsTable: document.getElementById("results-table"),
+    // Tab elements
+    tabBtns: document.querySelectorAll(".tab"),
+    panelReconcile: document.getElementById("panel-reconcile"),
+    panelActions: document.getElementById("panel-actions"),
+    panelTools: document.getElementById("panel-tools"),
+    actionsHint: document.getElementById("actions-hint"),
+    actionsContent: document.getElementById("actions-content"),
+    tabActions: document.querySelector('[data-tab="actions"]'),
   };
 
   // Event listeners
@@ -85,8 +99,33 @@ function initUI(browserMode) {
   els.reconcileBtn.addEventListener("click", handleReconcile);
   els.emailBtn.addEventListener("click", handleShowEmail);
   els.copyEmailBtn.addEventListener("click", handleCopyEmail);
+  els.creditNoteBtn.addEventListener("click", handleCreditNote);
+  els.reinvoiceBtn.addEventListener("click", handleReInvoice);
   els.applyPoColumns.addEventListener("click", () => applyManualColumns("po"));
   els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
+
+  // Tab switching
+  els.tabBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      switchTab(btn.dataset.tab);
+    });
+  });
+}
+
+// --- Tab Switching ---
+
+function switchTab(tabName) {
+  els.tabBtns.forEach((btn) => btn.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+
+  const btn = document.querySelector(`.tab[data-tab="${tabName}"]`);
+  const panel = document.getElementById(`panel-${tabName}`);
+  if (btn) btn.classList.add("active");
+  if (panel) panel.classList.add("active");
+
+  // Clear notification dot when visiting the tab
+  if (btn) btn.classList.remove("tab-notify");
 }
 
 // --- File Upload ---
@@ -174,6 +213,7 @@ function showManualColumnSelection(source, headers) {
   const skuSelect = isErp ? els.erpSkuCol : els.poSkuCol;
   const priceSelect = isErp ? els.erpPriceCol : els.poPriceCol;
   const nameSelect = isErp ? els.erpNameCol : els.poNameCol;
+  const qtySelect = isErp ? els.erpQtyCol : els.poQtyCol;
   const container = isErp ? els.manualColumnsErp : els.manualColumnsPo;
 
   // Populate dropdowns
@@ -187,13 +227,15 @@ function showManualColumnSelection(source, headers) {
     });
   });
 
-  // Name is optional — already has "None" default
-  nameSelect.innerHTML = '<option value="">— None —</option>';
-  headers.forEach((h) => {
-    const opt = document.createElement("option");
-    opt.value = h;
-    opt.textContent = h;
-    nameSelect.appendChild(opt);
+  // Name and Qty are optional — have "None" default
+  [nameSelect, qtySelect].forEach((select) => {
+    select.innerHTML = '<option value="">— None —</option>';
+    headers.forEach((h) => {
+      const opt = document.createElement("option");
+      opt.value = h;
+      opt.textContent = h;
+      select.appendChild(opt);
+    });
   });
 
   container.hidden = false;
@@ -204,19 +246,21 @@ function applyManualColumns(source) {
   const skuSelect = isErp ? els.erpSkuCol : els.poSkuCol;
   const priceSelect = isErp ? els.erpPriceCol : els.poPriceCol;
   const nameSelect = isErp ? els.erpNameCol : els.poNameCol;
+  const qtySelect = isErp ? els.erpQtyCol : els.poQtyCol;
   const statusEl = isErp ? els.erpStatus : els.poStatus;
   const container = isErp ? els.manualColumnsErp : els.manualColumnsPo;
 
   const sku = skuSelect.value;
   const price = priceSelect.value;
   const name = nameSelect.value || null;
+  const qty = qtySelect.value || null;
 
   if (!sku || !price) {
     showError("Please select both SKU and Price columns.");
     return;
   }
 
-  const columns = { sku, price, name };
+  const columns = { sku, price, name, qty };
 
   if (isErp) {
     state.erpColumns = columns;
@@ -276,6 +320,17 @@ async function handleReconcile() {
     setProgress(100, "Complete!");
     els.resultsSection.hidden = false;
 
+    // Enable Actions tab and show action buttons
+    els.tabActions.disabled = false;
+    els.actionsHint.hidden = true;
+    els.actionsContent.hidden = false;
+    els.tabActions.classList.add("tab-notify");
+
+    // Show credit note buttons only when exceptions exist
+    const hasExceptions = results.summary.exceptions > 0;
+    els.creditNoteBtn.hidden = !hasExceptions;
+    els.reinvoiceBtn.hidden = !hasExceptions;
+
     setTimeout(() => {
       els.progressSection.hidden = true;
     }, 1000);
@@ -314,6 +369,34 @@ async function handleCopyEmail() {
     document.body.removeChild(ta);
     setStatus(els.emailStatus, "Copied!", "success");
     setTimeout(() => setStatus(els.emailStatus, "", ""), 2000);
+  }
+}
+
+// --- Credit Note & Re-Invoice ---
+
+async function handleCreditNote() {
+  if (!state.results) return;
+  try {
+    els.creditNoteBtn.disabled = true;
+    const creditData = generateCreditNote(state.results);
+    await writeCreditNoteSheet(creditData, state.poFilename);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    els.creditNoteBtn.disabled = false;
+  }
+}
+
+async function handleReInvoice() {
+  if (!state.results) return;
+  try {
+    els.reinvoiceBtn.disabled = true;
+    const invoiceData = generateCorrectedInvoice(state.results);
+    await writeReInvoiceSheet(invoiceData, state.poFilename, state.results.summary.exceptions);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    els.reinvoiceBtn.disabled = false;
   }
 }
 
