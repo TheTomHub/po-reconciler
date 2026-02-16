@@ -9,7 +9,7 @@ export function generateEmailDraft(results, filename) {
   const { summary, rows } = results;
 
   const exceptionRows = rows.filter(
-    (r) => r.status === "Exception" || r.status === "Not in Oracle" || r.status === "Not in PO"
+    (r) => r.status === "Exception" || r.status === "Not in ERP" || r.status === "Not in PO"
   );
 
   const topExceptions = exceptionRows.slice(0, 3);
@@ -17,13 +17,13 @@ export function generateEmailDraft(results, filename) {
   const subject = `PO ${poNumber} — Reconciliation: ${summary.exceptions} exception${summary.exceptions !== 1 ? "s" : ""} found`;
 
   const topLines = topExceptions.map((r) => {
-    if (r.status === "Not in Oracle") {
-      return `  - SKU ${r.sku}: Not found in Oracle`;
+    if (r.status === "Not in ERP") {
+      return `  - SKU ${r.sku}: Not found in ERP`;
     }
     if (r.status === "Not in PO") {
-      return `  - SKU ${r.sku}: In Oracle but not on PO`;
+      return `  - SKU ${r.sku}: In ERP but not on PO`;
     }
-    return `  - SKU ${r.sku}: PO ${formatCurrency(r.poPrice)} vs Oracle ${formatCurrency(r.oraclePrice)} (diff: ${formatCurrency(r.diff)})`;
+    return `  - SKU ${r.sku}: PO ${formatCurrency(r.poPrice)} vs ERP ${formatCurrency(r.erpPrice)} (diff: ${formatCurrency(r.diff)})`;
   });
 
   const body = `Hi Team,

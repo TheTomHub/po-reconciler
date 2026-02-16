@@ -21,60 +21,139 @@ const HEADER_KEYWORDS = [
 export async function parseFile(file) {
   const ext = file.name.split(".").pop().toLowerCase();
 
-  let rawRows;
   switch (ext) {
     case "csv":
-    case "tsv":
-      rawRows = await parseCSVRaw(file);
-      break;
+    case "tsv": {
+      const rawRows = await parseCSVRaw(file);
+      return findBestTable(rawRows);
+    }
     case "xlsx":
     case "xls":
-      rawRows = await parseExcelRaw(file);
-      break;
+      return parseExcelAllSheets(file);
     case "pdf":
       return parsePDF(file);
     default:
       throw new Error(`Unsupported file type: .${ext}. Please use .xlsx, .csv, or .pdf.`);
   }
+}
 
-  if (rawRows.length < 2) {
-    throw new Error("File needs at least a header row and one data row.");
+/**
+ * Try every sheet in the workbook — pick the first one where we auto-detect SKU+Price
+ * with data rows. Falls back to the sheet with the most data-like content.
+ */
+async function parseExcelAllSheets(file) {
+  const buffer = await file.arrayBuffer();
+  let workbook;
+  try {
+    workbook = XLSX.read(buffer, { type: "array" });
+  } catch {
+    throw new Error("Could not read Excel file. Check it's not open in another program or corrupted.");
   }
 
-  // Get ranked candidate header rows
+  if (workbook.SheetNames.length === 0) {
+    throw new Error("Excel file has no sheets.");
+  }
+
+  let bestFallback = null; // best manual-selection result across all sheets
+
+  for (const sheetName of workbook.SheetNames) {
+    const sheet = workbook.Sheets[sheetName];
+    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    if (rawRows.length < 2) continue;
+
+    const result = findBestTable(rawRows, false);
+    if (result.autoDetected) {
+      return result;
+    }
+
+    // Track the best fallback (most columns = most likely real header)
+    if (!bestFallback || result.headers.length > bestFallback.headers.length) {
+      bestFallback = result;
+    }
+  }
+
+  if (bestFallback) {
+    return bestFallback;
+  }
+
+  throw new Error("Could not find a valid data table in any sheet.");
+}
+
+/**
+ * Given raw rows from a single sheet/CSV, find the best header row.
+ * If throwOnFail=true, throws when no rows found. Otherwise returns best-effort result.
+ */
+function findBestTable(rawRows, throwOnFail = true) {
+  if (rawRows.length < 2) {
+    if (throwOnFail) throw new Error("File needs at least a header row and one data row.");
+    return { headers: [], rows: [], autoDetected: false };
+  }
+
   const candidates = rankHeaderCandidates(rawRows);
 
   // Try each candidate — use the first one where column detection finds SKU + Price
+  // AND has at least 1 data row below it
   for (const idx of candidates) {
-    const headers = rawRows[idx].map((h) => String(h).trim()).filter(Boolean);
+    const { headers, colMap } = extractHeaders(rawRows[idx]);
     if (headers.length < 2) continue;
 
     const detected = detectColumns(headers);
     if (detected.sku && detected.price) {
-      // Found a header row with recognizable columns
-      const rows = buildRows(rawRows, idx, headers);
-      return { headers, rows };
+      const rows = buildRows(rawRows, idx, headers, colMap);
+      if (rows.length > 0) {
+        return { headers, rows, autoDetected: true };
+      }
     }
   }
 
-  // No candidate had detectable SKU+Price — use the best-scoring one for manual selection
-  const bestIdx = candidates[0] || 0;
-  const headers = rawRows[bestIdx].map((h) => String(h).trim()).filter(Boolean);
+  // No auto-detect success — pick the candidate with the MOST columns for manual selection
+  // (a real data header typically has 5+ columns)
+  const fallbackCandidates = [...candidates].sort((a, b) => {
+    const colsA = extractHeaders(rawRows[a]).headers.length;
+    const colsB = extractHeaders(rawRows[b]).headers.length;
+    return colsB - colsA;
+  });
 
-  if (headers.length < 2) {
-    throw new Error("Could not find a valid header row in the file.");
+  for (const idx of fallbackCandidates) {
+    const { headers, colMap } = extractHeaders(rawRows[idx]);
+    if (headers.length < 2) continue;
+    const rows = buildRows(rawRows, idx, headers, colMap);
+    if (rows.length > 0) {
+      return { headers, rows, autoDetected: false };
+    }
   }
 
-  return { headers, rows: buildRows(rawRows, bestIdx, headers) };
+  if (throwOnFail) {
+    throw new Error("Could not find a valid header row in the file.");
+  }
+  return { headers: [], rows: [], autoDetected: false };
 }
 
-function buildRows(rawRows, headerIdx, headers) {
+/**
+ * Extract non-empty headers and their original column indices.
+ * Preserves the mapping so data rows are read from the correct columns.
+ */
+function extractHeaders(rawRow) {
+  const headers = [];
+  const colMap = []; // colMap[i] = original column index for headers[i]
+  for (let i = 0; i < rawRow.length; i++) {
+    const val = String(rawRow[i] ?? "").trim();
+    if (val) {
+      headers.push(val);
+      colMap.push(i);
+    }
+  }
+  return { headers, colMap };
+}
+
+function buildRows(rawRows, headerIdx, headers, colMap) {
   return rawRows.slice(headerIdx + 1)
     .filter((row) => row.some((cell) => cell != null && String(cell).trim() !== ""))
     .map((row) => {
       const obj = {};
       headers.forEach((h, i) => {
-        obj[h] = row[i] != null ? String(row[i]) : "";
+        const col = colMap[i];
+        obj[h] = row[col] != null ? String(row[col]) : "";
       });
       return obj;
     });
@@ -141,23 +220,6 @@ function parseCSVRaw(file) {
   });
 }
 
-async function parseExcelRaw(file) {
-  const buffer = await file.arrayBuffer();
-  let workbook;
-  try {
-    workbook = XLSX.read(buffer, { type: "array" });
-  } catch {
-    throw new Error("Could not read Excel file. Check it's not open in another program or corrupted.");
-  }
-
-  const sheetName = workbook.SheetNames[0];
-  if (!sheetName) {
-    throw new Error("Excel file has no sheets.");
-  }
-
-  const sheet = workbook.Sheets[sheetName];
-  return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-}
 
 async function parsePDF(file) {
   let pdf;

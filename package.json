@@ -1,7 +1,7 @@
 {
   "name": "po-reconciler",
   "version": "1.0.0",
-  "description": "Excel Add-in for automated PO reconciliation against Oracle ERP exports",
+  "description": "Excel Add-in for automated PO reconciliation against ERP exports",
   "private": true,
   "scripts": {
     "start": "webpack serve --mode development",

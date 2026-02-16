@@ -13,7 +13,7 @@ const TABLE_HEADERS = [
   "Status",
   "SKU",
   "Product Name",
-  "Oracle $",
+  "ERP $",
   "PO $",
   "Difference",
   "% Diff",
@@ -86,9 +86,9 @@ export async function writeResultsSheet(results, tolerance) {
     if (results.rows.length > 0) {
       const dataValues = results.rows.map((row) => [
         row.duplicate ? `${row.status} (DUP)` : row.status,
-        row.oracleSku ? `${row.sku} → ${row.oracleSku}` : row.sku,
+        row.erpSku ? `${row.sku} → ${row.erpSku}` : row.sku,
         row.name || "",
-        row.oraclePrice != null ? row.oraclePrice : "",
+        row.erpPrice != null ? row.erpPrice : "",
         row.poPrice != null ? row.poPrice : "",
         row.diff != null ? row.diff : "",
         row.pctDiff != null ? `${row.pctDiff}%` : "",
@@ -105,7 +105,7 @@ export async function writeResultsSheet(results, tolerance) {
         const rowRange = sheet.getRange(`A${dataStartRow + i}:H${dataStartRow + i}`);
         const status = results.rows[i].status;
 
-        if (status === "Exception" || status === "Not in Oracle" || status === "Not in PO") {
+        if (status === "Exception" || status === "Not in ERP" || status === "Not in PO") {
           rowRange.format.fill.color = EXCEPTION_BG;
         } else if (status === "Tolerance") {
           rowRange.format.fill.color = TOLERANCE_BG;

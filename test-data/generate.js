@@ -5,7 +5,7 @@
 const XLSX = require("xlsx");
 const path = require("path");
 
-const oracleRows = [
+const erpRows = [
   { SKU: "TEST001", "Product Name": "Widget Alpha", "Unit Price": 10.00 },
   { SKU: "TEST002", "Product Name": "Widget Beta", "Unit Price": 20.00 },
   { SKU: "TEST003", "Product Name": "Widget Gamma", "Unit Price": 15.00 },
@@ -29,10 +29,10 @@ const oracleRows = [
 ];
 
 // PO has 3 intentional price differences:
-// TEST001: Oracle $10.00 vs PO $10.25 (exception - $0.25 diff)
-// TEST002: Oracle $20.00 vs PO $20.01 (tolerance - $0.01 diff)
-// TEST003: Oracle $15.00 vs PO $15.00 (exact match)
-const poRows = oracleRows.map((row) => {
+// TEST001: ERP $10.00 vs PO $10.25 (exception - $0.25 diff)
+// TEST002: ERP $20.00 vs PO $20.01 (tolerance - $0.01 diff)
+// TEST003: ERP $15.00 vs PO $15.00 (exact match)
+const poRows = erpRows.map((row) => {
   const poRow = { ...row };
   if (row.SKU === "TEST001") poRow["Unit Price"] = 10.25;
   if (row.SKU === "TEST002") poRow["Unit Price"] = 20.01;
@@ -40,12 +40,12 @@ const poRows = oracleRows.map((row) => {
   return poRow;
 });
 
-// Write Oracle export
-const oracleSheet = XLSX.utils.json_to_sheet(oracleRows);
-const oracleWB = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(oracleWB, oracleSheet, "Oracle Export");
-XLSX.writeFile(oracleWB, path.join(__dirname, "oracle_export.xlsx"));
-console.log("Created oracle_export.xlsx");
+// Write ERP export
+const erpSheet = XLSX.utils.json_to_sheet(erpRows);
+const erpWB = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(erpWB, erpSheet, "ERP Export");
+XLSX.writeFile(erpWB, path.join(__dirname, "erp_export.xlsx"));
+console.log("Created erp_export.xlsx");
 
 // Write Customer PO
 const poSheet = XLSX.utils.json_to_sheet(poRows);

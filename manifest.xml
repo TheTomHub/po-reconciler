@@ -11,7 +11,7 @@
   <ProviderName>PO Reconciler</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="PO Reconciler"/>
-  <Description DefaultValue="Automated PO reconciliation against Oracle ERP exports"/>
+  <Description DefaultValue="Automated PO reconciliation against ERP exports"/>
   <IconUrl DefaultValue="https://thetomhub.github.io/po-reconciler/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://thetomhub.github.io/po-reconciler/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://thetomhub.github.io/po-reconciler"/>
@@ -112,7 +112,7 @@
         <bt:String id="TabLabel" DefaultValue="PO Reconciler"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Reconcile customer POs against Oracle ERP exports with a single click."/>
+        <bt:String id="GetStarted.Description" DefaultValue="Reconcile customer POs against ERP exports with a single click."/>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open the PO Reconciler task pane"/>
         <bt:String id="ReconcileButton.Tooltip" DefaultValue="Run reconciliation with current settings"/>
       </bt:LongStrings>

@@ -3,26 +3,26 @@ import { parseNumber } from "../utils/format";
 /**
  * Core reconciliation engine.
  *
- * Input: { poData, poColumns, oracleData, oracleColumns, tolerance }
+ * Input: { poData, poColumns, erpData, erpColumns, tolerance }
  * Output: { summary, rows }
  */
-export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolerance }) {
-  // Build Oracle lookup map: normalizedSKU -> { price, name, originalRow, matched }
-  const oracleMap = new Map();
-  const oracleDuplicates = new Set();
+export function reconcile({ poData, poColumns, erpData, erpColumns, tolerance }) {
+  // Build ERP lookup map: normalizedSKU -> { price, name, originalRow, matched }
+  const erpMap = new Map();
+  const erpDuplicates = new Set();
 
-  for (const row of oracleData.rows) {
-    const rawSku = row[oracleColumns.sku];
+  for (const row of erpData.rows) {
+    const rawSku = row[erpColumns.sku];
     if (!rawSku) continue;
     const normSku = normalizeSku(rawSku);
 
-    if (oracleMap.has(normSku)) {
-      oracleDuplicates.add(normSku);
+    if (erpMap.has(normSku)) {
+      erpDuplicates.add(normSku);
     }
 
-    oracleMap.set(normSku, {
-      price: parseNumber(row[oracleColumns.price]),
-      name: oracleColumns.name ? row[oracleColumns.name] || "" : "",
+    erpMap.set(normSku, {
+      price: parseNumber(row[erpColumns.price]),
+      name: erpColumns.name ? row[erpColumns.name] || "" : "",
       originalRow: row,
       matched: false,
     });
@@ -56,7 +56,7 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     const normSku = normalizeSku(rawSku);
     const poPrice = parseNumber(row[poColumns.price]);
     const poName = poColumns.name ? row[poColumns.name] || "" : "";
-    const isDuplicate = poDuplicates.has(normSku) || oracleDuplicates.has(normSku);
+    const isDuplicate = poDuplicates.has(normSku) || erpDuplicates.has(normSku);
 
     if (poPrice === null) {
       warnings++;
@@ -64,7 +64,7 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
         status: "Warning",
         sku: rawSku,
         name: poName,
-        oraclePrice: null,
+        erpPrice: null,
         poPrice: null,
         diff: null,
         pctDiff: null,
@@ -74,30 +74,30 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
       continue;
     }
 
-    // Try exact match first, then prefix match (customer core number → Oracle full SKU)
-    let oracle = oracleMap.get(normSku);
+    // Try exact match first, then prefix match (customer core number → ERP full SKU)
+    let oracle = erpMap.get(normSku);
     let matchType = "exact";
 
     if (!oracle) {
-      const prefixMatches = findPrefixMatches(normSku, oracleMap);
+      const prefixMatches = findPrefixMatches(normSku, erpMap);
 
       if (prefixMatches.length === 1) {
         // Single prefix match — use it
         oracle = prefixMatches[0].entry;
         matchType = "prefix";
       } else if (prefixMatches.length > 1) {
-        // Multiple Oracle SKUs match this core number — flag for manual review
+        // Multiple ERP SKUs match this core number — flag for manual review
         const matchedSkus = prefixMatches.map((m) => m.sku).join(", ");
         warnings++;
         resultRows.push({
           status: "Warning",
           sku: rawSku,
           name: poName,
-          oraclePrice: null,
+          erpPrice: null,
           poPrice,
           diff: null,
           pctDiff: null,
-          action: `Multiple Oracle matches: ${matchedSkus}`,
+          action: `Multiple ERP matches: ${matchedSkus}`,
           duplicate: isDuplicate,
         });
         continue;
@@ -107,14 +107,14 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     if (!oracle) {
       exceptions++;
       resultRows.push({
-        status: "Not in Oracle",
+        status: "Not in ERP",
         sku: rawSku,
         name: poName,
-        oraclePrice: null,
+        erpPrice: null,
         poPrice,
         diff: null,
         pctDiff: null,
-        action: "Review — SKU not found in Oracle",
+        action: "Review — SKU not found in ERP",
         duplicate: isDuplicate,
       });
       continue;
@@ -128,11 +128,11 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
         status: "Warning",
         sku: rawSku,
         name: oracle.name || poName,
-        oraclePrice: null,
+        erpPrice: null,
         poPrice,
         diff: null,
         pctDiff: null,
-        action: "Non-numeric Oracle price",
+        action: "Non-numeric ERP price",
         duplicate: isDuplicate,
       });
       continue;
@@ -162,9 +162,9 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     resultRows.push({
       status,
       sku: rawSku,
-      oracleSku: matchType === "prefix" ? denormalizeSku(findPrefixMatches(normSku, oracleMap)[0].sku, oracleData.rows, oracleColumns.sku) : null,
+      erpSku: matchType === "prefix" ? denormalizeSku(findPrefixMatches(normSku, erpMap)[0].sku, erpData.rows, erpColumns.sku) : null,
       name: oracle.name || poName,
-      oraclePrice: oracle.price,
+      erpPrice: oracle.price,
       poPrice,
       diff,
       pctDiff,
@@ -173,27 +173,27 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
     });
   }
 
-  // Unmatched Oracle rows
-  for (const [normSku, oracle] of oracleMap) {
+  // Unmatched ERP rows
+  for (const [normSku, oracle] of erpMap) {
     if (oracle.matched) continue;
 
     resultRows.push({
       status: "Not in PO",
-      sku: denormalizeSku(normSku, oracleData.rows, oracleColumns.sku),
+      sku: denormalizeSku(normSku, erpData.rows, erpColumns.sku),
       name: oracle.name,
-      oraclePrice: oracle.price,
+      erpPrice: oracle.price,
       poPrice: null,
       diff: null,
       pctDiff: null,
       action: "Review — SKU not in PO",
-      duplicate: oracleDuplicates.has(normSku),
+      duplicate: erpDuplicates.has(normSku),
     });
   }
 
   // Sort: exceptions first, then tolerance, then matches; within each group by |diff| desc
   const statusOrder = {
     Exception: 0,
-    "Not in Oracle": 1,
+    "Not in ERP": 1,
     "Not in PO": 2,
     Warning: 3,
     Tolerance: 4,
@@ -224,14 +224,14 @@ export function reconcile({ poData, poColumns, oracleData, oracleColumns, tolera
 }
 
 /**
- * Find Oracle SKUs that start with the given PO core number.
- * e.g. PO "1234" matches Oracle "1234V012", "1234V013"
+ * Find ERP SKUs that start with the given PO core number.
+ * e.g. PO "1234" matches ERP "1234V012", "1234V013"
  */
-function findPrefixMatches(normPoSku, oracleMap) {
+function findPrefixMatches(normPoSku, erpMap) {
   const results = [];
-  for (const [oracleSku, entry] of oracleMap) {
-    if (oracleSku.startsWith(normPoSku) && oracleSku !== normPoSku) {
-      results.push({ sku: oracleSku, entry });
+  for (const [erpSku, entry] of erpMap) {
+    if (erpSku.startsWith(normPoSku) && erpSku !== normPoSku) {
+      results.push({ sku: erpSku, entry });
     }
   }
   return results;

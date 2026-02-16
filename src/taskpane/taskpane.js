@@ -12,8 +12,8 @@ import { formatCurrency } from "../utils/format";
 const state = {
   poData: null,       // { headers, rows }
   poColumns: null,    // { sku, price, name? }
-  oracleData: null,   // { headers, rows }
-  oracleColumns: null, // { sku, price, name? }
+  erpData: null,   // { headers, rows }
+  erpColumns: null, // { sku, price, name? }
   tolerance: 0.02,
   results: null,
   poFilename: "",
@@ -27,7 +27,7 @@ Office.onReady((info) => {
   if (info.host === Office.HostType.Excel) {
     initUI(false);
   } else {
-    // Browser preview mode — file upload for Oracle instead of range selection
+    // Browser preview mode — file upload for ERP instead of range selection
     initUI(true);
     console.log("Running in browser preview mode (no Excel APIs)");
   }
@@ -40,7 +40,7 @@ function initUI(browserMode) {
     poFileInput: document.getElementById("po-file-input"),
     poStatus: document.getElementById("po-status"),
     selectRangeBtn: document.getElementById("select-range-btn"),
-    oracleStatus: document.getElementById("oracle-status"),
+    erpStatus: document.getElementById("erp-status"),
     toleranceInput: document.getElementById("tolerance-input"),
     reconcileBtn: document.getElementById("reconcile-btn"),
     progressSection: document.getElementById("progress-section"),
@@ -66,25 +66,25 @@ function initUI(browserMode) {
     poPriceCol: document.getElementById("po-price-col"),
     poNameCol: document.getElementById("po-name-col"),
     applyPoColumns: document.getElementById("apply-po-columns"),
-    manualColumnsOracle: document.getElementById("manual-columns-oracle"),
-    oracleSkuCol: document.getElementById("oracle-sku-col"),
-    oraclePriceCol: document.getElementById("oracle-price-col"),
-    oracleNameCol: document.getElementById("oracle-name-col"),
-    applyOracleColumns: document.getElementById("apply-oracle-columns"),
+    manualColumnsErp: document.getElementById("manual-columns-erp"),
+    erpSkuCol: document.getElementById("erp-sku-col"),
+    erpPriceCol: document.getElementById("erp-price-col"),
+    erpNameCol: document.getElementById("erp-name-col"),
+    applyErpColumns: document.getElementById("apply-erp-columns"),
     // Browser mode elements
-    oracleRangeBody: document.getElementById("oracle-range-body"),
-    oracleFileBody: document.getElementById("oracle-file-body"),
-    oracleFileInput: document.getElementById("oracle-file-input"),
-    oracleFileStatus: document.getElementById("oracle-file-status"),
+    erpRangeBody: document.getElementById("erp-range-body"),
+    erpFileBody: document.getElementById("erp-file-body"),
+    erpFileInput: document.getElementById("erp-file-input"),
+    erpFileStatus: document.getElementById("erp-file-status"),
     browserResultsTable: document.getElementById("browser-results-table"),
     resultsTable: document.getElementById("results-table"),
   };
 
   // In browser mode, swap "Select Range" for file upload
   if (browserMode) {
-    els.oracleRangeBody.hidden = true;
-    els.oracleFileBody.hidden = false;
-    els.oracleFileInput.addEventListener("change", handleOracleFileUpload);
+    els.erpRangeBody.hidden = true;
+    els.erpFileBody.hidden = false;
+    els.erpFileInput.addEventListener("change", handleErpFileUpload);
   }
 
   // Event listeners
@@ -97,7 +97,7 @@ function initUI(browserMode) {
   els.emailBtn.addEventListener("click", handleShowEmail);
   els.copyEmailBtn.addEventListener("click", handleCopyEmail);
   els.applyPoColumns.addEventListener("click", () => applyManualColumns("po"));
-  els.applyOracleColumns.addEventListener("click", () => applyManualColumns("oracle"));
+  els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
 }
 
 // --- File Upload ---
@@ -116,7 +116,7 @@ async function handleFileUpload(e) {
 
     if (!columns.sku || !columns.price) {
       showManualColumnSelection("po", state.poData.headers);
-      setStatus(els.poStatus, `${file.name} — select columns below`, "");
+      setStatus(els.poStatus, `${file.name} — ${state.poData.headers.length} cols, ${state.poData.rows.length} rows — select columns below`, "");
     } else {
       state.poColumns = columns;
       els.manualColumnsPo.hidden = true;
@@ -131,43 +131,43 @@ async function handleFileUpload(e) {
   }
 }
 
-// --- Oracle File Upload (browser mode) ---
+// --- ERP File Upload (browser mode) ---
 
-async function handleOracleFileUpload(e) {
+async function handleErpFileUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   hideError();
-  setStatus(els.oracleFileStatus, "Parsing...", "");
+  setStatus(els.erpFileStatus, "Parsing...", "");
 
   try {
-    state.oracleData = await parseFile(file);
-    const columns = detectColumns(state.oracleData.headers);
+    state.erpData = await parseFile(file);
+    const columns = detectColumns(state.erpData.headers);
 
     if (!columns.sku || !columns.price) {
-      showManualColumnSelection("oracle", state.oracleData.headers);
-      setStatus(els.oracleFileStatus, `${file.name} — select columns below`, "");
-      setStatus(els.oracleStatus, `${file.name} — select columns below`, "");
+      showManualColumnSelection("erp", state.erpData.headers);
+      setStatus(els.erpFileStatus, `${file.name} — ${state.erpData.headers.length} cols, ${state.erpData.rows.length} rows — select columns`, "");
+      setStatus(els.erpStatus, `${file.name} — select columns below`, "");
     } else {
-      state.oracleColumns = columns;
-      els.manualColumnsOracle.hidden = true;
-      setStatus(els.oracleFileStatus, `${file.name} (${state.oracleData.rows.length} rows)`, "success");
-      setStatus(els.oracleStatus, `${state.oracleData.rows.length} rows loaded`, "success");
+      state.erpColumns = columns;
+      els.manualColumnsErp.hidden = true;
+      setStatus(els.erpFileStatus, `${file.name} (${state.erpData.rows.length} rows)`, "success");
+      setStatus(els.erpStatus, `${state.erpData.rows.length} rows loaded`, "success");
     }
     updateReconcileButton();
   } catch (err) {
-    state.oracleData = null;
-    state.oracleColumns = null;
-    setStatus(els.oracleFileStatus, "No file selected", "");
+    state.erpData = null;
+    state.erpColumns = null;
+    setStatus(els.erpFileStatus, "No file selected", "");
     showError(err.message);
   }
 }
 
-// --- Oracle Range Selection ---
+// --- ERP Range Selection ---
 
 async function handleSelectRange() {
   hideError();
-  setStatus(els.oracleStatus, "Reading selection...", "");
+  setStatus(els.erpStatus, "Reading selection...", "");
 
   try {
     await Excel.run(async (context) => {
@@ -177,7 +177,7 @@ async function handleSelectRange() {
 
       const values = range.values;
       if (!values || values.length < 2) {
-        throw new Error("Please select a range containing Oracle data with at least a header row and one data row.");
+        throw new Error("Please select a range containing ERP data with at least a header row and one data row.");
       }
 
       const headers = values[0].map((h) => String(h).trim());
@@ -189,23 +189,23 @@ async function handleSelectRange() {
         return obj;
       });
 
-      state.oracleData = { headers, rows };
+      state.erpData = { headers, rows };
       const columns = detectColumns(headers);
 
       if (!columns.sku || !columns.price) {
-        showManualColumnSelection("oracle", headers);
-        setStatus(els.oracleStatus, `${rows.length} rows — select columns below`, "");
+        showManualColumnSelection("erp", headers);
+        setStatus(els.erpStatus, `${rows.length} rows — select columns below`, "");
       } else {
-        state.oracleColumns = columns;
-        els.manualColumnsOracle.hidden = true;
-        setStatus(els.oracleStatus, `${rows.length} rows loaded`, "success");
+        state.erpColumns = columns;
+        els.manualColumnsErp.hidden = true;
+        setStatus(els.erpStatus, `${rows.length} rows loaded`, "success");
       }
       updateReconcileButton();
     });
   } catch (err) {
-    state.oracleData = null;
-    state.oracleColumns = null;
-    setStatus(els.oracleStatus, "No range selected", "");
+    state.erpData = null;
+    state.erpColumns = null;
+    setStatus(els.erpStatus, "No range selected", "");
     showError(err.message);
   }
 }
@@ -213,11 +213,11 @@ async function handleSelectRange() {
 // --- Manual Column Selection ---
 
 function showManualColumnSelection(source, headers) {
-  const isOracle = source === "oracle";
-  const skuSelect = isOracle ? els.oracleSkuCol : els.poSkuCol;
-  const priceSelect = isOracle ? els.oraclePriceCol : els.poPriceCol;
-  const nameSelect = isOracle ? els.oracleNameCol : els.poNameCol;
-  const container = isOracle ? els.manualColumnsOracle : els.manualColumnsPo;
+  const isErp = source === "erp";
+  const skuSelect = isErp ? els.erpSkuCol : els.poSkuCol;
+  const priceSelect = isErp ? els.erpPriceCol : els.poPriceCol;
+  const nameSelect = isErp ? els.erpNameCol : els.poNameCol;
+  const container = isErp ? els.manualColumnsErp : els.manualColumnsPo;
 
   // Populate dropdowns
   [skuSelect, priceSelect].forEach((select) => {
@@ -243,12 +243,12 @@ function showManualColumnSelection(source, headers) {
 }
 
 function applyManualColumns(source) {
-  const isOracle = source === "oracle";
-  const skuSelect = isOracle ? els.oracleSkuCol : els.poSkuCol;
-  const priceSelect = isOracle ? els.oraclePriceCol : els.poPriceCol;
-  const nameSelect = isOracle ? els.oracleNameCol : els.poNameCol;
-  const statusEl = isOracle ? els.oracleStatus : els.poStatus;
-  const container = isOracle ? els.manualColumnsOracle : els.manualColumnsPo;
+  const isErp = source === "erp";
+  const skuSelect = isErp ? els.erpSkuCol : els.poSkuCol;
+  const priceSelect = isErp ? els.erpPriceCol : els.poPriceCol;
+  const nameSelect = isErp ? els.erpNameCol : els.poNameCol;
+  const statusEl = isErp ? els.erpStatus : els.poStatus;
+  const container = isErp ? els.manualColumnsErp : els.manualColumnsPo;
 
   const sku = skuSelect.value;
   const price = priceSelect.value;
@@ -261,9 +261,9 @@ function applyManualColumns(source) {
 
   const columns = { sku, price, name };
 
-  if (isOracle) {
-    state.oracleColumns = columns;
-    setStatus(statusEl, `${state.oracleData.rows.length} rows loaded`, "success");
+  if (isErp) {
+    state.erpColumns = columns;
+    setStatus(statusEl, `${state.erpData.rows.length} rows loaded`, "success");
   } else {
     state.poColumns = columns;
     setStatus(statusEl, `${state.poFilename} (${state.poData.rows.length} rows)`, "success");
@@ -292,8 +292,8 @@ async function handleReconcile() {
     const results = reconcile({
       poData: state.poData,
       poColumns: state.poColumns,
-      oracleData: state.oracleData,
-      oracleColumns: state.oracleColumns,
+      erpData: state.erpData,
+      erpColumns: state.erpColumns,
       tolerance: state.tolerance,
     });
 
@@ -364,7 +364,7 @@ async function handleCopyEmail() {
 
 function renderBrowserResultsTable(results) {
   const table = els.resultsTable;
-  const headers = ["Status", "SKU", "Name", "Oracle $", "PO $", "Diff", "% Diff", "Action"];
+  const headers = ["Status", "SKU", "Name", "ERP $", "PO $", "Diff", "% Diff", "Action"];
 
   let html = "<thead><tr>";
   headers.forEach((h) => { html += `<th>${h}</th>`; });
@@ -372,7 +372,7 @@ function renderBrowserResultsTable(results) {
 
   results.rows.forEach((row) => {
     const statusClass =
-      (row.status === "Exception" || row.status === "Not in Oracle" || row.status === "Not in PO")
+      (row.status === "Exception" || row.status === "Not in ERP" || row.status === "Not in PO")
         ? "row-exception"
         : row.status === "Tolerance" ? "row-tolerance"
         : row.status === "Match" ? "row-match"
@@ -382,9 +382,9 @@ function renderBrowserResultsTable(results) {
 
     html += `<tr class="${statusClass}">`;
     html += `<td>${label}</td>`;
-    html += `<td>${row.oracleSku ? `${row.sku} → ${row.oracleSku}` : row.sku}</td>`;
+    html += `<td>${row.erpSku ? `${row.sku} → ${row.erpSku}` : row.sku}</td>`;
     html += `<td>${row.name || ""}</td>`;
-    html += `<td>${row.oraclePrice != null ? formatCurrency(row.oraclePrice) : ""}</td>`;
+    html += `<td>${row.erpPrice != null ? formatCurrency(row.erpPrice) : ""}</td>`;
     html += `<td>${row.poPrice != null ? formatCurrency(row.poPrice) : ""}</td>`;
     html += `<td>${row.diff != null ? formatCurrency(row.diff) : ""}</td>`;
     html += `<td>${row.pctDiff != null ? row.pctDiff + "%" : ""}</td>`;
@@ -402,7 +402,7 @@ function renderBrowserResultsTable(results) {
 function updateReconcileButton() {
   const ready =
     state.poData && state.poColumns &&
-    state.oracleData && state.oracleColumns;
+    state.erpData && state.erpColumns;
   els.reconcileBtn.disabled = !ready;
 }
 

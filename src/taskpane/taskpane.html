@@ -45,39 +45,39 @@
         </div>
       </section>
 
-      <!-- Step 2: Select Oracle Data -->
-      <section class="step" id="step-oracle">
+      <!-- Step 2: Select ERP Data -->
+      <section class="step" id="step-erp">
         <div class="step-header">
           <span class="step-number">2</span>
-          <span class="step-title">Select Oracle Data</span>
+          <span class="step-title">Select ERP Data</span>
         </div>
-        <div class="step-body" id="oracle-range-body">
+        <div class="step-body" id="erp-range-body">
           <button id="select-range-btn" class="btn">Select Range</button>
-          <span class="status" id="oracle-status">No range selected</span>
+          <span class="status" id="erp-status">No range selected</span>
         </div>
-        <div class="step-body" id="oracle-file-body" hidden>
-          <label class="file-upload-btn" for="oracle-file-input">
+        <div class="step-body" id="erp-file-body" hidden>
+          <label class="file-upload-btn" for="erp-file-input">
             Choose File
           </label>
-          <input type="file" id="oracle-file-input" accept=".xlsx,.xls,.csv,.pdf" hidden>
-          <span class="status" id="oracle-file-status">No file selected</span>
+          <input type="file" id="erp-file-input" accept=".xlsx,.xls,.csv,.pdf" hidden>
+          <span class="status" id="erp-file-status">No file selected</span>
         </div>
-        <!-- Manual column selection for Oracle -->
-        <div id="manual-columns-oracle" class="manual-columns" hidden>
+        <!-- Manual column selection for ERP -->
+        <div id="manual-columns-erp" class="manual-columns" hidden>
           <p class="warning-text">Could not auto-detect columns. Please select:</p>
           <div class="select-row">
-            <label for="oracle-sku-col">SKU Column:</label>
-            <select id="oracle-sku-col"></select>
+            <label for="erp-sku-col">SKU Column:</label>
+            <select id="erp-sku-col"></select>
           </div>
           <div class="select-row">
-            <label for="oracle-price-col">Price Column:</label>
-            <select id="oracle-price-col"></select>
+            <label for="erp-price-col">Price Column:</label>
+            <select id="erp-price-col"></select>
           </div>
           <div class="select-row">
-            <label for="oracle-name-col">Name Column (optional):</label>
-            <select id="oracle-name-col"><option value="">— None —</option></select>
+            <label for="erp-name-col">Name Column (optional):</label>
+            <select id="erp-name-col"><option value="">— None —</option></select>
           </div>
-          <button id="apply-oracle-columns" class="btn btn-sm">Apply</button>
+          <button id="apply-erp-columns" class="btn btn-sm">Apply</button>
         </div>
       </section>
 
