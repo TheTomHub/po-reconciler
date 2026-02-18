@@ -46,6 +46,7 @@ module.exports = (env, argv) => {
         patterns: [
           { from: "assets", to: "assets" },
           { from: "manifest.xml", to: "manifest.xml" },
+          { from: "index.html", to: "index.html" },
           { from: "guide.html", to: "guide.html" },
           // Agent config files — copied to dist for Copilot deployment
           { from: "appPackage/manifest.json", to: "appPackage/manifest.json" },
