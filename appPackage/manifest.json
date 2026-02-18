@@ -74,6 +74,10 @@
             {
               "id": "DraftExceptionEmail",
               "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateERPStaging",
+              "type": "executeDataFunction"
             }
           ]
         },

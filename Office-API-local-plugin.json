@@ -141,6 +141,40 @@
           "instructions": "Show the email subject and body to the user. Offer to copy it to clipboard or open the email client."
         }
       }
+    },
+    {
+      "name": "GenerateERPStaging",
+      "description": "Generates an ERP-ready staging sheet from reconciliation results. Uses corrected (ERP) prices, color-codes rows by status (Ready/Review/Hold), and includes a legend. The operator reviews the sheet then copies or uploads it into their ERP system.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string",
+            "description": "Customer name for the staging sheet header. Optional.",
+            "default": ""
+          },
+          "deliveryDate": {
+            "type": "string",
+            "description": "Delivery date for the staging sheet header. Optional.",
+            "default": ""
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Summary of the staging sheet including line count, total value, and status breakdown (ready/review/hold)."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateERPStaging` creates an ERP-ready staging sheet using corrected prices from the reconciliation. Green rows are safe to enter, yellow rows need price confirmation, red rows need item verification.",
+          "instructions": "Only run this after a reconciliation has been completed. If the user mentions a customer name or delivery date, pass them as parameters. This is typically the last step before the operator enters data into the ERP."
+        },
+        "responding": {
+          "description": "Report the staging sheet details.",
+          "instructions": "Tell the user the total lines, total value, and the status breakdown (how many ready, review, hold). Explain that green rows can be entered directly, yellow rows need price confirmation, and red rows need item verification. Mention the sheet has been activated."
+        }
+      }
     }
   ],
   "runtimes": [
@@ -150,7 +184,7 @@
         "local_endpoint": "Microsoft.Office.Addin",
         "allowed_host": ["workbook"]
       },
-      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail"],
+      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging"],
       "auth": {
         "type": "None"
       }
