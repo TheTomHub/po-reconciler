@@ -2,9 +2,43 @@
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.3/schema.json",
   "schema_version": "v2.3",
   "name_for_human": "PO Reconciler",
-  "description_for_human": "Reconcile purchase orders against ERP data, generate credit notes and re-invoices",
+  "description_for_human": "Extract PO data, reconcile against ERP, generate credit notes and re-invoices",
   "namespace": "addinfunction",
   "functions": [
+    {
+      "name": "ExtractPOData",
+      "description": "Extracts structured order data from a PO in the active sheet. Auto-detects columns (SKU, price, qty, name, delivery date, UOM, customer, PO reference) and writes a clean staging sheet with standardized format. Flags data quality issues with warnings.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sheetName": {
+            "type": "string",
+            "description": "Optional name of the sheet to extract from. If not specified, uses the active sheet.",
+            "default": ""
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code: GBP, USD, or EUR. Default: GBP",
+            "default": "GBP"
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Extraction summary including line count, total value, detected fields, and any warnings."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types (SKU, price, quantity, product name, delivery date, UOM, customer, PO reference), normalizes the data, and writes a standardized staging sheet. It flags data quality issues like missing prices, non-numeric quantities, and line total mismatches.",
+          "instructions": "Before running, confirm the user has PO data open in a sheet. If they mention a specific sheet name, pass it as the sheetName parameter. The function will auto-detect the header row and column mappings."
+        },
+        "responding": {
+          "description": "Report the extraction results clearly.",
+          "instructions": "Present: PO reference, customer name, line count, total value, which fields were detected, and any warnings. If warnings exist, tell the user to review yellow-highlighted rows in the staging sheet. Suggest running ReconcilePO next if they have ERP data to compare against."
+        }
+      }
+    },
     {
       "name": "ReconcilePO",
       "description": "Reconciles a customer PO against ERP price data. Reads PO data from the 'PO' named range or first sheet, reads ERP data from the currently selected range, compares prices per SKU, and writes a reconciliation results sheet with color-coded status (Match, Tolerance, Exception).",
@@ -116,7 +150,7 @@
         "local_endpoint": "Microsoft.Office.Addin",
         "allowed_host": ["workbook"]
       },
-      "run_for_functions": ["ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail"],
+      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail"],
       "auth": {
         "type": "None"
       }
