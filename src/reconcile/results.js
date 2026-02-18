@@ -1,4 +1,4 @@
-import { formatCurrency } from "../utils/format";
+import { formatCurrency, getCurrencyFormat } from "../utils/format";
 
 /* global Excel */
 
@@ -120,7 +120,7 @@ export async function writeResultsSheet(results, tolerance) {
       const priceColumns = ["D", "E", "F"];
       for (const col of priceColumns) {
         const priceRange = sheet.getRange(`${col}${dataStartRow}:${col}${dataEndRow}`);
-        priceRange.numberFormat = [["$#,##0.00"]];
+        priceRange.numberFormat = [[getCurrencyFormat()]];
       }
     }
 

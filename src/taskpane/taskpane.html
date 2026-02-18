@@ -14,8 +14,7 @@
 
     <nav class="tab-bar">
       <button class="tab active" data-tab="reconcile">Reconcile</button>
-      <button class="tab" data-tab="actions" disabled>Actions</button>
-      <button class="tab" data-tab="tools">Tools</button>
+      <button class="tab" data-tab="actions" disabled title="Run reconciliation first">Actions</button>
     </nav>
 
     <main>
@@ -34,6 +33,7 @@
             <input type="file" id="po-file-input" accept=".xlsx,.xls,.csv,.pdf" hidden>
             <span class="status" id="po-status">No file selected</span>
           </div>
+          <p class="step-hint">Zendesk HTML POs: save as .xlsx first.</p>
           <!-- Manual column selection (hidden by default) -->
           <div id="manual-columns-po" class="manual-columns" hidden>
             <p class="warning-text">Could not auto-detect columns. Please select:</p>
@@ -64,8 +64,8 @@
             <span class="step-title">Select ERP Data</span>
           </div>
           <div class="step-body" id="erp-range-body">
-            <button id="select-range-btn" class="btn">Select Range</button>
-            <span class="status" id="erp-status">No range selected</span>
+            <button id="select-range-btn" class="btn">Load Selection</button>
+            <span class="status" id="erp-status">Select ERP data in Excel, then click Load</span>
           </div>
           <!-- Manual column selection for ERP -->
           <div id="manual-columns-erp" class="manual-columns" hidden>
@@ -97,8 +97,14 @@
             <span class="step-title">Settings</span>
           </div>
           <div class="step-body">
-            <label for="tolerance-input">Tolerance ($):</label>
+            <label for="tolerance-input">Tolerance:</label>
             <input type="number" id="tolerance-input" value="0.02" min="0" step="0.01">
+            <label for="currency-select">Currency:</label>
+            <select id="currency-select">
+              <option value="GBP" selected>GBP (£)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
           </div>
         </section>
 
@@ -135,6 +141,10 @@
               <span class="result-label">Exceptions</span>
               <span class="result-value" id="result-exceptions">—</span>
             </div>
+            <div class="result-card warning">
+              <span class="result-label">Warnings</span>
+              <span class="result-value" id="result-warnings">—</span>
+            </div>
             <div class="result-card exposure">
               <span class="result-label">Total Exposure</span>
               <span class="result-value" id="result-exposure">—</span>
@@ -157,10 +167,11 @@
         <p class="tab-hint" id="actions-hint">Run reconciliation first to unlock actions.</p>
         <div id="actions-content" hidden>
           <div class="action-section">
-            <button id="email-btn" class="btn btn-secondary">Email MDC Team</button>
+            <button id="email-btn" class="btn btn-secondary">Draft Exception Email</button>
             <button id="credit-note-btn" class="btn btn-secondary" hidden>Generate Credit Note</button>
             <button id="reinvoice-btn" class="btn btn-secondary" hidden>Generate Re-Invoice</button>
           </div>
+          <span class="status" id="action-status"></span>
           <!-- Email Draft -->
           <section id="email-section" hidden>
             <h2>Email Draft</h2>
@@ -172,12 +183,6 @@
             <span class="status" id="email-status"></span>
           </section>
         </div>
-      </div>
-
-      <!-- Tab: Tools -->
-      <div class="tab-panel" id="panel-tools">
-        <h2>Tools</h2>
-        <p class="tab-hint">Additional tools coming soon: Amendment Tracker, Batch Processor, Price Watchlist.</p>
       </div>
 
       <!-- Error Display (visible on any tab) -->

@@ -87,12 +87,19 @@ header h1 {
   display: block;
 }
 
-/* Hint text for empty/locked tabs */
+/* Hint text for empty/locked tabs and inline step hints */
 .tab-hint {
   font-size: 12px;
   color: #797775;
   text-align: center;
   padding: 24px 16px;
+}
+
+.step-hint {
+  font-size: 11px;
+  color: #797775;
+  margin-top: 4px;
+  padding-left: 32px;
 }
 
 /* Steps */
@@ -338,6 +345,10 @@ select {
 
 .result-card.exception {
   border-left: 3px solid #a4262c;
+}
+
+.result-card.warning {
+  border-left: 3px solid #ffaa44;
 }
 
 .result-card.exposure {

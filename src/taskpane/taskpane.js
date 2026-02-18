@@ -6,7 +6,7 @@ import { writeResultsSheet } from "../reconcile/results";
 import { generateEmailDraft, buildMailtoLink } from "../email/email";
 import { generateCreditNote, generateCorrectedInvoice } from "../reconcile/creditnote";
 import { writeCreditNoteSheet, writeReInvoiceSheet } from "../reconcile/creditnote-results";
-import { formatCurrency } from "../utils/format";
+import { formatCurrency, setCurrency } from "../utils/format";
 
 /* global Office, Excel */
 
@@ -44,6 +44,7 @@ function initUI(browserMode) {
     selectRangeBtn: document.getElementById("select-range-btn"),
     erpStatus: document.getElementById("erp-status"),
     toleranceInput: document.getElementById("tolerance-input"),
+    currencySelect: document.getElementById("currency-select"),
     reconcileBtn: document.getElementById("reconcile-btn"),
     progressSection: document.getElementById("progress-section"),
     progressFill: document.getElementById("progress-fill"),
@@ -53,6 +54,7 @@ function initUI(browserMode) {
     resultMatches: document.getElementById("result-matches"),
     resultTolerances: document.getElementById("result-tolerances"),
     resultExceptions: document.getElementById("result-exceptions"),
+    resultWarnings: document.getElementById("result-warnings"),
     resultExposure: document.getElementById("result-exposure"),
     emailBtn: document.getElementById("email-btn"),
     creditNoteBtn: document.getElementById("credit-note-btn"),
@@ -62,6 +64,7 @@ function initUI(browserMode) {
     copyEmailBtn: document.getElementById("copy-email-btn"),
     mailtoLink: document.getElementById("mailto-link"),
     emailStatus: document.getElementById("email-status"),
+    actionStatus: document.getElementById("action-status"),
     errorSection: document.getElementById("error-section"),
     errorMessage: document.getElementById("error-message"),
     // Manual column selectors
@@ -84,7 +87,6 @@ function initUI(browserMode) {
     tabBtns: document.querySelectorAll(".tab"),
     panelReconcile: document.getElementById("panel-reconcile"),
     panelActions: document.getElementById("panel-actions"),
-    panelTools: document.getElementById("panel-tools"),
     actionsHint: document.getElementById("actions-hint"),
     actionsContent: document.getElementById("actions-content"),
     tabActions: document.querySelector('[data-tab="actions"]'),
@@ -95,6 +97,9 @@ function initUI(browserMode) {
   els.selectRangeBtn.addEventListener("click", handleSelectRange);
   els.toleranceInput.addEventListener("change", () => {
     state.tolerance = parseFloat(els.toleranceInput.value) || 0.02;
+  });
+  els.currencySelect.addEventListener("change", () => {
+    setCurrency(els.currencySelect.value);
   });
   els.reconcileBtn.addEventListener("click", handleReconcile);
   els.emailBtn.addEventListener("click", handleShowEmail);
@@ -201,7 +206,7 @@ async function handleSelectRange() {
   } catch (err) {
     state.erpData = null;
     state.erpColumns = null;
-    setStatus(els.erpStatus, "No range selected", "");
+    setStatus(els.erpStatus, "Select ERP data in Excel, then click Load", "");
     showError(err.message);
   }
 }
@@ -315,6 +320,7 @@ async function handleReconcile() {
     els.resultMatches.textContent = results.summary.matches;
     els.resultTolerances.textContent = results.summary.tolerances;
     els.resultExceptions.textContent = results.summary.exceptions;
+    els.resultWarnings.textContent = results.summary.warnings || 0;
     els.resultExposure.textContent = formatCurrency(results.summary.exposure);
 
     setProgress(100, "Complete!");
@@ -322,6 +328,7 @@ async function handleReconcile() {
 
     // Enable Actions tab and show action buttons
     els.tabActions.disabled = false;
+    els.tabActions.removeAttribute("title");
     els.actionsHint.hidden = true;
     els.actionsContent.hidden = false;
     els.tabActions.classList.add("tab-notify");
@@ -330,6 +337,9 @@ async function handleReconcile() {
     const hasExceptions = results.summary.exceptions > 0;
     els.creditNoteBtn.hidden = !hasExceptions;
     els.reinvoiceBtn.hidden = !hasExceptions;
+
+    // Clear any previous action status
+    setStatus(els.actionStatus, "", "");
 
     setTimeout(() => {
       els.progressSection.hidden = true;
@@ -378,8 +388,11 @@ async function handleCreditNote() {
   if (!state.results) return;
   try {
     els.creditNoteBtn.disabled = true;
+    setStatus(els.actionStatus, "Generating...", "");
     const creditData = generateCreditNote(state.results);
     await writeCreditNoteSheet(creditData, state.poFilename);
+    setStatus(els.actionStatus, "Credit Note sheet created", "success");
+    setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
   } catch (err) {
     showError(err.message);
   } finally {
@@ -391,8 +404,11 @@ async function handleReInvoice() {
   if (!state.results) return;
   try {
     els.reinvoiceBtn.disabled = true;
+    setStatus(els.actionStatus, "Generating...", "");
     const invoiceData = generateCorrectedInvoice(state.results);
     await writeReInvoiceSheet(invoiceData, state.poFilename, state.results.summary.exceptions);
+    setStatus(els.actionStatus, "Re-Invoice sheet created", "success");
+    setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
   } catch (err) {
     showError(err.message);
   } finally {

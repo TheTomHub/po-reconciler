@@ -11,7 +11,7 @@ Office.onReady(() => {
 function reconcileFromRibbon(event) {
   // Show a notification that the taskpane should be used
   Office.context.ui.displayDialogAsync(
-    "https://localhost:3000/taskpane.html",
+    "https://thetomhub.github.io/po-reconciler/taskpane.html",
     { height: 60, width: 30 },
     (result) => {
       if (result.status === Office.AsyncResultStatus.Failed) {

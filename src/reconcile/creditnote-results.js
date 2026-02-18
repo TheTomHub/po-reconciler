@@ -1,4 +1,4 @@
-import { formatCurrency } from "../utils/format";
+import { formatCurrency, getCurrencyFormat } from "../utils/format";
 
 /* global Excel */
 
@@ -84,7 +84,7 @@ export async function writeCreditNoteSheet(creditData, poFilename) {
       // Currency format for price columns (D, E, F)
       for (const col of ["D", "E", "F"]) {
         const priceRange = sheet.getRange(`${col}${dataStartRow}:${col}${dataEndRow}`);
-        priceRange.numberFormat = [["$#,##0.00"]];
+        priceRange.numberFormat = [[getCurrencyFormat()]];
       }
 
       // Red font for credit amount column (F)
@@ -98,7 +98,7 @@ export async function writeCreditNoteSheet(creditData, poFilename) {
       footerRange.format.font.bold = true;
 
       const footerPriceCell = sheet.getRange(`F${footerRow}`);
-      footerPriceCell.numberFormat = [["$#,##0.00"]];
+      footerPriceCell.numberFormat = [[getCurrencyFormat()]];
       footerPriceCell.format.font.color = CREDIT_FG;
 
       // Auto-fit columns
@@ -181,7 +181,7 @@ export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCoun
       // Currency format for price columns (D, E)
       for (const col of ["D", "E"]) {
         const priceRange = sheet.getRange(`${col}${dataStartRow}:${col}${dataEndRow}`);
-        priceRange.numberFormat = [["$#,##0.00"]];
+        priceRange.numberFormat = [[getCurrencyFormat()]];
       }
 
       // Yellow highlight on rows where price changed
@@ -199,7 +199,7 @@ export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCoun
       footerRange.format.font.bold = true;
 
       const footerPriceCell = sheet.getRange(`E${footerRow}`);
-      footerPriceCell.numberFormat = [["$#,##0.00"]];
+      footerPriceCell.numberFormat = [[getCurrencyFormat()]];
 
       const fullRange = sheet.getRange(`A1:E${footerRow}`);
       fullRange.format.autofitColumns();
