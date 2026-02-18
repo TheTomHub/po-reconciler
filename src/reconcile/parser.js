@@ -221,6 +221,14 @@ function parseCSVRaw(file) {
 }
 
 
+// ── PDF positional parsing ──
+// Uses text item coordinates from pdf.js to reconstruct table rows and columns,
+// rather than naive text joining which loses all layout information.
+
+const PDF_Y_TOLERANCE = 3;    // Points — items within this Y delta are on the same line
+const PDF_ITEM_GAP = 8;       // Points — X gap to consider items as separate cells
+const PDF_COL_TOLERANCE = 20; // Points — X tolerance for clustering cells into columns
+
 async function parsePDF(file) {
   let pdf;
   try {
@@ -230,61 +238,128 @@ async function parsePDF(file) {
     throw new Error("Cannot parse this PDF. Please export to Excel/CSV first.");
   }
 
-  const lines = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
+  // Collect positioned text items across all pages
+  const allItems = [];
+
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const viewport = page.getViewport({ scale: 1 });
     const textContent = await page.getTextContent();
-    const pageText = textContent.items.map((item) => item.str).join(" ");
-    lines.push(...pageText.split("\n").map((l) => l.trim()).filter(Boolean));
-  }
 
-  if (lines.length < 2) {
-    throw new Error("Cannot parse this PDF. Please export to Excel/CSV first.");
-  }
-
-  const delimiter = detectPdfDelimiter(lines);
-  if (!delimiter) {
-    throw new Error("Cannot parse this PDF. No tabular data detected. Please export to Excel/CSV first.");
-  }
-
-  const headerLine = lines[0];
-  const headers = headerLine.split(delimiter).map((h) => h.trim()).filter(Boolean);
-
-  if (headers.length < 2) {
-    throw new Error("Cannot parse this PDF. Please export to Excel/CSV first.");
-  }
-
-  const rows = [];
-  for (let i = 1; i < lines.length; i++) {
-    const cells = lines[i].split(delimiter).map((c) => c.trim());
-    if (cells.length >= headers.length - 1) {
-      const obj = {};
-      headers.forEach((h, j) => {
-        obj[h] = cells[j] || "";
+    for (const item of textContent.items) {
+      const text = item.str;
+      if (!text || !text.trim()) continue;
+      allItems.push({
+        x: item.transform[4],
+        y: viewport.height - item.transform[5], // flip Y to top-down
+        text: text.trim(),
+        width: item.width || 0,
       });
-      rows.push(obj);
     }
   }
 
-  if (rows.length === 0) {
-    throw new Error("Cannot parse this PDF. No data rows found. Please export to Excel/CSV first.");
+  if (allItems.length === 0) {
+    throw new Error("Cannot parse this PDF — no text found. Please export to Excel/CSV first.");
   }
 
-  return { headers, rows };
+  // Group items into rows by Y proximity, detect columns, build 2D array
+  const posRows = groupPdfRows(allItems);
+  const rawRows = alignPdfColumns(posRows);
+
+  if (rawRows.length < 2) {
+    throw new Error("Cannot parse this PDF. Please export to Excel/CSV first.");
+  }
+
+  return findBestTable(rawRows);
 }
 
-function detectPdfDelimiter(lines) {
-  const delimiters = ["\t", /\s{2,}/, "|"];
-  for (const d of delimiters) {
-    const headerParts = lines[0].split(d).filter(Boolean);
-    if (headerParts.length >= 2) {
-      for (let i = 1; i < Math.min(lines.length, 5); i++) {
-        const parts = lines[i].split(d).filter(Boolean);
-        if (parts.length >= headerParts.length - 1) {
-          return d;
-        }
+/**
+ * Group text items into rows by Y coordinate proximity.
+ * Returns array of { y, items[] }, sorted top-to-bottom.
+ */
+function groupPdfRows(items) {
+  const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x);
+
+  const rows = [];
+  for (const item of sorted) {
+    const lastRow = rows[rows.length - 1];
+    if (lastRow && Math.abs(lastRow.y - item.y) <= PDF_Y_TOLERANCE) {
+      lastRow.items.push(item);
+    } else {
+      rows.push({ y: item.y, items: [item] });
+    }
+  }
+
+  return rows;
+}
+
+/**
+ * Convert positioned rows into a column-aligned 2D string array.
+ * 1. Within each row, merge adjacent items into cells (gap < PDF_ITEM_GAP)
+ * 2. Cluster cell X positions across all rows into columns
+ * 3. Assign cells to columns → 2D string array for findBestTable()
+ */
+function alignPdfColumns(rows) {
+  // Step 1: Merge items within each row into cells
+  const rowCells = rows.map((row) => {
+    const sorted = [...row.items].sort((a, b) => a.x - b.x);
+    if (sorted.length === 0) return [];
+
+    const cells = [];
+    let text = sorted[0].text;
+    let x = sorted[0].x;
+    let right = sorted[0].x + sorted[0].width;
+
+    for (let i = 1; i < sorted.length; i++) {
+      const gap = sorted[i].x - right;
+      if (gap > PDF_ITEM_GAP) {
+        cells.push({ text, x });
+        text = sorted[i].text;
+        x = sorted[i].x;
+      } else {
+        text += " " + sorted[i].text;
+      }
+      right = Math.max(right, sorted[i].x + sorted[i].width);
+    }
+    cells.push({ text, x });
+    return cells;
+  });
+
+  // Step 2: Cluster all cell X positions into column anchors
+  const columns = [];
+  for (const cells of rowCells) {
+    for (const cell of cells) {
+      const match = columns.find((c) => Math.abs(c.center - cell.x) <= PDF_COL_TOLERANCE);
+      if (match) {
+        match.count++;
+        match.center += (cell.x - match.center) / match.count; // running average
+      } else {
+        columns.push({ center: cell.x, count: 1 });
       }
     }
   }
-  return null;
+  columns.sort((a, b) => a.center - b.center);
+
+  if (columns.length === 0) return [];
+
+  // Column boundaries = midpoints between adjacent column centers
+  const bounds = [-Infinity];
+  for (let i = 0; i < columns.length - 1; i++) {
+    bounds.push((columns[i].center + columns[i + 1].center) / 2);
+  }
+  bounds.push(Infinity);
+
+  // Step 3: Assign cells to columns → 2D array
+  return rowCells.map((cells) => {
+    const row = new Array(columns.length).fill("");
+    for (const cell of cells) {
+      for (let c = 0; c < columns.length; c++) {
+        if (cell.x >= bounds[c] && cell.x < bounds[c + 1]) {
+          row[c] = row[c] ? row[c] + " " + cell.text : cell.text;
+          break;
+        }
+      }
+    }
+    return row;
+  });
 }
