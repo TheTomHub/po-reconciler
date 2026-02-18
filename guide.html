@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chandlr — User Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #323130;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .hero {
+      background: linear-gradient(135deg, #1f4e79 0%, #2d6fa0 100%);
+      color: #fff;
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+    .hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+
+    /* Container */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+    }
+
+    /* Section */
+    .section {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 32px;
+      margin-top: 24px;
+    }
+    .section h2 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1f4e79;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e8e8e8;
+    }
+    .section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f4e79;
+      margin: 20px 0 8px;
+    }
+    .section p, .section li { font-size: 15px; }
+    .section p { margin-bottom: 12px; }
+    .section ul, .section ol { padding-left: 24px; margin-bottom: 12px; }
+    .section li { margin-bottom: 6px; }
+
+    /* Step cards */
+    .step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin: 20px 0;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 6px;
+      border-left: 4px solid #1f4e79;
+    }
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1f4e79;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-content strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .step-content p { font-size: 14px; color: #605e5c; margin-bottom: 4px; }
+
+    /* Mockup panels */
+    .mockup {
+      background: #fff;
+      border: 1px solid #d2d0ce;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .mockup-header {
+      background: #1f4e79;
+      color: #fff;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .mockup-body { padding: 12px 16px; }
+    .mockup-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+    }
+    .mockup-btn {
+      display: inline-block;
+      padding: 4px 14px;
+      border: 1px solid #8a8886;
+      border-radius: 3px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      color: #323130;
+    }
+    .mockup-btn.primary {
+      background: #1f4e79;
+      color: #fff;
+      border-color: #1f4e79;
+    }
+    .mockup-btn.green {
+      background: #2b7a4b;
+      color: #fff;
+      border-color: #2b7a4b;
+    }
+    .mockup-status {
+      font-size: 12px;
+      color: #107c10;
+    }
+    .mockup-label {
+      font-size: 12px;
+      color: #605e5c;
+    }
+
+    /* Result cards mockup */
+    .results-mock {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 8px 0;
+    }
+    .result-card-mock {
+      padding: 6px 10px;
+      border: 1px solid #edebe9;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 12px;
+    }
+    .result-card-mock .val { font-size: 18px; font-weight: 700; color: #323130; display: block; }
+    .result-card-mock .lbl { font-size: 10px; color: #605e5c; text-transform: uppercase; }
+    .result-card-mock.match { border-left: 3px solid #107c10; }
+    .result-card-mock.exception { border-left: 3px solid #a4262c; }
+    .result-card-mock.tolerance { border-left: 3px solid #ffb900; }
+
+    /* Color-coded table mockup */
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
+    .mini-table th {
+      background: #1f4e79; color: #fff; padding: 5px 8px; text-align: left; font-weight: 600;
+    }
+    .mini-table td { padding: 4px 8px; border-bottom: 1px solid #edebe9; }
+    .mini-table .row-green { background: #E2EFDA; }
+    .mini-table .row-yellow { background: #FFEB9C; }
+    .mini-table .row-red { background: #FFC7CE; }
+
+    /* Callout boxes */
+    .callout {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    .callout.tip {
+      background: #dff6dd;
+      border-left: 4px solid #107c10;
+    }
+    .callout.warning {
+      background: #fff4ce;
+      border-left: 4px solid #ffb900;
+    }
+    .callout.info {
+      background: #e5f1fb;
+      border-left: 4px solid #1f4e79;
+    }
+    .callout strong { display: block; margin-bottom: 4px; }
+
+    /* TOC */
+    .toc {
+      background: #f0f4f8;
+      padding: 20px 24px;
+      border-radius: 6px;
+      margin: 16px 0;
+    }
+    .toc h3 { margin: 0 0 8px; font-size: 14px; color: #1f4e79; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 4px; }
+    .toc a { color: #1f4e79; text-decoration: none; font-size: 14px; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* Pipeline diagram */
+    .pipeline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .pipeline-step {
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      color: #fff;
+    }
+    .pipeline-step.blue { background: #1f4e79; }
+    .pipeline-step.green { background: #2b7a4b; }
+    .pipeline-arrow { font-size: 18px; color: #8a8886; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 13px;
+      color: #797775;
+    }
+
+    /* Requirements list */
+    .req-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .req-card {
+      padding: 12px;
+      background: #f8f8f8;
+      border-radius: 6px;
+      border: 1px solid #edebe9;
+    }
+    .req-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: #1f4e79; }
+    .req-card span { font-size: 13px; color: #605e5c; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Chandlr</h1>
+  <p>Order processing made simple. Extract, validate, reconcile, resolve, enter &mdash; all inside Excel.</p>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="section">
+    <div class="toc">
+      <h3>Quick Navigation</h3>
+      <ol>
+        <li><a href="#requirements">Requirements</a></li>
+        <li><a href="#install">Installation (2 minutes)</a></li>
+        <li><a href="#workflow">The Workflow</a></li>
+        <li><a href="#step1">Step 1: Upload a PO</a></li>
+        <li><a href="#step2">Step 2: Extract &amp; Validate</a></li>
+        <li><a href="#step3">Step 3: Load ERP Data</a></li>
+        <li><a href="#step4">Step 4: Reconcile</a></li>
+        <li><a href="#step5">Step 5: Review Results</a></li>
+        <li><a href="#step6">Step 6: Take Action</a></li>
+        <li><a href="#step7">Step 7: Generate ERP Staging</a></li>
+        <li><a href="#tips">Tips &amp; Troubleshooting</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Requirements -->
+  <div class="section" id="requirements">
+    <h2>Requirements</h2>
+    <div class="req-grid">
+      <div class="req-card">
+        <strong>Microsoft Excel</strong>
+        <span>Desktop (Windows/Mac) or Excel for the Web</span>
+      </div>
+      <div class="req-card">
+        <strong>Your PO file</strong>
+        <span>CSV, Excel (.xlsx), or PDF</span>
+      </div>
+      <div class="req-card">
+        <strong>ERP price extract</strong>
+        <span>Paste or open in a sheet &mdash; needs SKU + Price columns</span>
+      </div>
+      <div class="req-card">
+        <strong>Internet connection</strong>
+        <span>The add-in loads from the web</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installation -->
+  <div class="section" id="install">
+    <h2>Installation (2 minutes)</h2>
+    <p>Chandlr is an Excel add-in. You install it once, then it appears in your ribbon.</p>
+
+    <h3>Option A: Excel Desktop (Windows/Mac)</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open Excel and go to Insert &rarr; Office Add-ins</strong>
+        <p>In the ribbon at the top, click the <b>Insert</b> tab, then click <b>Office Add-ins</b> (or "Get Add-ins").</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Click "Upload My Add-in"</strong>
+        <p>In the dialog, click <b>Upload My Add-in</b> in the top-right corner. If prompted, choose <b>Browse</b>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Select the manifest file</strong>
+        <p>Download <a href="manifest.xml" download>manifest.xml</a> and select it. Click <b>Upload</b>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Find "Chandlr" in the ribbon</strong>
+        <p>A new <b>Chandlr</b> tab appears in the ribbon. Click <b>Open Chandlr</b> to launch the task pane.</p>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <strong>One-time setup</strong>
+      Once installed, Chandlr stays in your ribbon. You don't need to upload the file again.
+    </div>
+
+    <h3>Option B: Excel for the Web</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open a workbook in Excel Online</strong>
+        <p>Go to <a href="https://www.office.com/launch/excel" target="_blank">office.com/launch/excel</a> and open any workbook.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Insert &rarr; Office Add-ins &rarr; Upload My Add-in</strong>
+        <p>Same steps as desktop. Upload the <a href="manifest.xml" download>manifest.xml</a> file.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Workflow -->
+  <div class="section" id="workflow">
+    <h2>The Workflow</h2>
+    <p>Chandlr takes you through a linear pipeline. Each step feeds into the next:</p>
+    <div class="pipeline">
+      <span class="pipeline-step blue">Upload PO</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step blue">Extract &amp; Validate</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step blue">Load ERP</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step blue">Reconcile</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step green">Actions</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step green">ERP Staging</span>
+    </div>
+    <p>The task pane has two tabs: <b>Reconcile</b> (steps 1&ndash;4) and <b>Actions</b> (steps 5&ndash;7).</p>
+  </div>
+
+  <!-- Step 1: Upload PO -->
+  <div class="section" id="step1">
+    <h2>Step 1: Upload a PO</h2>
+    <p>Click <b>Choose File</b> and select the customer PO. Supported formats: .csv, .xlsx, .xls, .pdf</p>
+
+    <div class="mockup">
+      <div class="mockup-header">Chandlr &mdash; Reconcile Tab</div>
+      <div class="mockup-body">
+        <div style="font-weight:600; margin-bottom:8px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1f4e79;color:#fff;font-size:11px;margin-right:6px;">1</span>
+          Upload Customer PO
+        </div>
+        <div class="mockup-row">
+          <span class="mockup-btn">Choose File</span>
+          <span class="mockup-status">tesco-po-2025-0247.csv (50 rows)</span>
+        </div>
+        <div class="mockup-row">
+          <span class="mockup-btn">Extract to Staging Sheet</span>
+        </div>
+      </div>
+    </div>
+
+    <p>Chandlr auto-detects your columns (SKU, price, quantity, description, etc.). If it can't, you'll see dropdown menus to select them manually.</p>
+
+    <div class="callout info">
+      <strong>Zendesk / HTML POs</strong>
+      If your PO is an HTML page or email, save it as .xlsx first (File &rarr; Save As &rarr; Excel Workbook).
+    </div>
+  </div>
+
+  <!-- Step 2: Extract & Validate -->
+  <div class="section" id="step2">
+    <h2>Step 2: Extract &amp; Validate</h2>
+    <p>Click <b>Extract to Staging Sheet</b>. Chandlr will:</p>
+    <ol>
+      <li>Read every line item from the PO</li>
+      <li>Normalize SKUs, prices, quantities, and descriptions</li>
+      <li>Write a clean "Staging" sheet in your workbook</li>
+      <li>Run validation checks on the data</li>
+    </ol>
+
+    <div class="mockup">
+      <div class="mockup-header">After extraction</div>
+      <div class="mockup-body">
+        <div class="mockup-row">
+          <span class="mockup-status">50 lines, &pound;5,602.17 (2 extraction warnings)</span>
+        </div>
+        <div class="mockup-row">
+          <span style="display:inline-block;padding:4px 10px;border-radius:3px;font-size:12px;font-weight:500;background:#dff6dd;color:#107c10;border:1px solid #107c10;">Validation passed</span>
+        </div>
+      </div>
+    </div>
+
+    <p>The validation badge tells you the data quality:</p>
+    <ul>
+      <li><span style="background:#dff6dd;color:#107c10;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:500;">Validation passed</span> &mdash; All good, proceed</li>
+      <li><span style="background:#fff4ce;color:#7a6400;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:500;">Passed with warnings</span> &mdash; Review the warnings, but you can proceed</li>
+      <li><span style="background:#fde7e9;color:#a4262c;padding:2px 8px;border-radius:3px;font-size:12px;font-weight:500;">Errors found</span> &mdash; Fix the issues before reconciling</li>
+    </ul>
+    <p>Click the badge to expand the full validation report.</p>
+
+    <div class="callout tip">
+      <strong>Check the staging sheet</strong>
+      Switch to the new "Staging" sheet tab in your workbook. Rows highlighted yellow have warnings &mdash; hover over them to see details in the cell notes.
+    </div>
+  </div>
+
+  <!-- Step 3: Load ERP Data -->
+  <div class="section" id="step3">
+    <h2>Step 3: Load ERP Data</h2>
+    <p>Now load your ERP price list so Chandlr can compare prices.</p>
+
+    <div class="step">
+      <div class="step-num">A</div>
+      <div class="step-content">
+        <strong>Open or paste your ERP data into a sheet</strong>
+        <p>This should have at least a SKU column and a Price column. Paste it into a new sheet in the same workbook, or open it alongside.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">B</div>
+      <div class="step-content">
+        <strong>Select the entire ERP data range</strong>
+        <p>Click the top-left cell of your ERP data and drag to select <b>all rows and columns, including the header row</b>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">C</div>
+      <div class="step-content">
+        <strong>Click "Load Selection" in Chandlr</strong>
+        <p>Back in the task pane, click the <b>Load Selection</b> button under step 2.</p>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-header">After loading ERP data</div>
+      <div class="mockup-body">
+        <div style="font-weight:600; margin-bottom:8px;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1f4e79;color:#fff;font-size:11px;margin-right:6px;">2</span>
+          Select ERP Data
+        </div>
+        <div class="mockup-row">
+          <span class="mockup-btn">Load Selection</span>
+          <span class="mockup-status">52 rows loaded</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Important: select the header row too</strong>
+      Your selection must include the header row (SKU, Price, Description, etc.). Chandlr uses the headers to auto-detect which column is which.
+    </div>
+  </div>
+
+  <!-- Step 4: Reconcile -->
+  <div class="section" id="step4">
+    <h2>Step 4: Reconcile</h2>
+    <p>With both PO and ERP data loaded, the <b>Reconcile</b> button turns active. Click it.</p>
+
+    <div class="mockup">
+      <div class="mockup-header">Settings &amp; Reconcile</div>
+      <div class="mockup-body">
+        <div class="mockup-row">
+          <span class="mockup-label">Tolerance:</span>
+          <span style="border:1px solid #8a8886;border-radius:3px;padding:2px 8px;font-size:12px;width:60px;display:inline-block;text-align:center;">0.02</span>
+          <span class="mockup-label" style="margin-left:8px;">Currency:</span>
+          <span style="border:1px solid #8a8886;border-radius:3px;padding:2px 8px;font-size:12px;">GBP (&pound;)</span>
+        </div>
+        <div class="mockup-row" style="justify-content:center;margin-top:8px;">
+          <span class="mockup-btn primary" style="padding:6px 24px;font-size:14px;">Reconcile</span>
+        </div>
+      </div>
+    </div>
+
+    <p><b>Tolerance</b> means: price differences smaller than this value are considered OK. Default is &pound;0.02 (2p).</p>
+    <p>Chandlr compares every SKU on the PO against the ERP price list and writes a color-coded <b>Recon</b> sheet.</p>
+  </div>
+
+  <!-- Step 5: Review Results -->
+  <div class="section" id="step5">
+    <h2>Step 5: Review Results</h2>
+    <p>After reconciliation, you'll see a summary on the Reconcile tab:</p>
+
+    <div class="results-mock">
+      <div class="result-card-mock"><span class="val">53</span><span class="lbl">Total Items</span></div>
+      <div class="result-card-mock match"><span class="val">36</span><span class="lbl">Matches</span></div>
+      <div class="result-card-mock tolerance"><span class="val">3</span><span class="lbl">Within Tolerance</span></div>
+      <div class="result-card-mock exception"><span class="val">11</span><span class="lbl">Exceptions</span></div>
+    </div>
+
+    <p>A new <b>Recon</b> sheet is created in your workbook with full details. Rows are color-coded:</p>
+    <table class="mini-table">
+      <tr><th>Colour</th><th>Status</th><th>Meaning</th></tr>
+      <tr class="row-green"><td>Green</td><td>Match</td><td>PO price = ERP price</td></tr>
+      <tr style="background:#FFEB9C"><td>Yellow</td><td>Tolerance</td><td>Difference is within tolerance (e.g. &pound;0.01)</td></tr>
+      <tr style="background:#FFC7CE"><td>Red</td><td>Exception</td><td>Price mismatch needs review</td></tr>
+      <tr style="background:#F2F2F2"><td>Grey</td><td>Not in ERP / Warning</td><td>SKU not found or data issue</td></tr>
+    </table>
+
+    <p>The <b>Actions</b> tab also becomes active (look for the notification dot).</p>
+  </div>
+
+  <!-- Step 6: Take Action -->
+  <div class="section" id="step6">
+    <h2>Step 6: Take Action</h2>
+    <p>Switch to the <b>Actions</b> tab. Depending on the results, you'll see these buttons:</p>
+
+    <div class="mockup">
+      <div class="mockup-header">Chandlr &mdash; Actions Tab</div>
+      <div class="mockup-body">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+          <span class="mockup-btn green">Draft Exception Email</span>
+          <span class="mockup-btn green">Generate Credit Note</span>
+          <span class="mockup-btn green">Generate Re-Invoice</span>
+          <span class="mockup-btn green">Generate ERP Staging</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Draft Exception Email</h3>
+    <p>Creates an email draft summarizing the top pricing exceptions. You can copy the text or open it directly in your email client.</p>
+
+    <h3>Generate Credit Note</h3>
+    <p>Creates a <b>CreditNote</b> sheet that credits ALL PO lines at their original PO prices (as negative amounts). This is company policy: credit everything, then re-invoice at correct prices.</p>
+
+    <h3>Generate Re-Invoice</h3>
+    <p>Creates a <b>ReInvoice</b> sheet with corrected ERP prices for all lines. Rows where the price changed are highlighted yellow.</p>
+
+    <div class="callout info">
+      <strong>Credit Note + Re-Invoice buttons only appear when there are exceptions.</strong>
+      If all prices match, you don't need them.
+    </div>
+  </div>
+
+  <!-- Step 7: ERP Staging -->
+  <div class="section" id="step7">
+    <h2>Step 7: Generate ERP Staging</h2>
+    <p>Click <b>Generate ERP Staging</b> to create a clean sheet ready for ERP entry. This is the final output &mdash; the data you'll enter into SAP, Oracle, D365, or whatever system you use.</p>
+
+    <p>The staging sheet uses the <b>corrected ERP prices</b> (not the original PO prices) and color-codes each row:</p>
+
+    <table class="mini-table">
+      <tr><th>Colour</th><th>Status</th><th>What to do</th></tr>
+      <tr class="row-green"><td>Green</td><td>Ready</td><td>Price verified. Enter into ERP as-is.</td></tr>
+      <tr class="row-yellow"><td>Yellow</td><td>Review</td><td>Price exception. Confirm the correct price, then enter.</td></tr>
+      <tr class="row-red"><td>Red</td><td>Hold</td><td>SKU not found in ERP or data issue. Do not enter &mdash; investigate first.</td></tr>
+    </table>
+
+    <div class="mockup">
+      <div class="mockup-header">ERPStaging sheet (example)</div>
+      <div class="mockup-body" style="padding:0;overflow-x:auto;">
+        <table class="mini-table" style="margin:0;">
+          <tr><th>Line</th><th>SKU</th><th>Description</th><th>Qty</th><th>Price</th><th>Total</th><th>Status</th></tr>
+          <tr class="row-green"><td>1</td><td>1001V001</td><td>Organic Green Tea 250g</td><td>48</td><td>&pound;2.49</td><td>&pound;119.52</td><td>Ready</td></tr>
+          <tr class="row-green"><td>2</td><td>1002V002</td><td>Fair Trade Coffee 1kg</td><td>24</td><td>&pound;6.19</td><td>&pound;148.56</td><td>Ready</td></tr>
+          <tr class="row-yellow"><td>3</td><td>1008V003</td><td>Chicken Breast 500g</td><td>48</td><td>&pound;4.49</td><td>&pound;215.52</td><td>Review</td></tr>
+          <tr class="row-red"><td>4</td><td>1049</td><td>Vitamin D 90 Caps</td><td>24</td><td>&pound;3.49</td><td>&pound;83.76</td><td>Hold</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <strong>How to enter into ERP</strong>
+      <ul style="margin-top:6px;padding-left:16px;">
+        <li>Copy the green rows directly into your ERP import tool (DataLoad, LSMW, etc.)</li>
+        <li>Review yellow rows with your buyer/manager, then update the price and enter</li>
+        <li>Red rows need the SKU verified in ERP before entry</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Tips & Troubleshooting -->
+  <div class="section" id="tips">
+    <h2>Tips &amp; Troubleshooting</h2>
+
+    <h3>Column detection isn't working</h3>
+    <p>If Chandlr can't auto-detect your columns, it shows dropdowns. Make sure your header row uses recognizable names like "SKU", "Price", "Qty", "Description", etc. Rename ambiguous headers if needed.</p>
+
+    <h3>ERP data won't load</h3>
+    <p>Make sure you've <b>selected</b> the data range in Excel before clicking "Load Selection". The selection must include the header row.</p>
+
+    <h3>SKUs don't match between PO and ERP</h3>
+    <p>Chandlr handles common mismatches automatically:</p>
+    <ul>
+      <li><b>Prefix matching</b>: PO SKU "1046" will match ERP SKU "1046V001"</li>
+      <li><b>Case-insensitive</b>: "abc123" matches "ABC123"</li>
+      <li><b>Whitespace</b>: Leading/trailing spaces are trimmed</li>
+    </ul>
+    <p>If a SKU still shows "Not in ERP", it likely needs to be set up in your ERP system.</p>
+
+    <h3>The task pane is empty or shows an error</h3>
+    <p>Try: close the task pane (X), then reopen it from the Chandlr ribbon tab. If that doesn't work, remove and re-upload the add-in.</p>
+
+    <h3>Changing the tolerance</h3>
+    <p>Adjust the tolerance value (in the Settings section) before running reconciliation. For example, set it to 0.05 if you're OK with up to 5p difference.</p>
+
+    <h3>Changing the currency</h3>
+    <p>Use the currency dropdown (GBP/USD/EUR) in Settings. This affects formatting only &mdash; it doesn't convert values.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Chandlr &mdash; Order processing made simple.<br>
+  Questions? Contact your Chandlr administrator.
+</div>
+
+</body>
+</html>
