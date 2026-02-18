@@ -1,0 +1,125 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.3/schema.json",
+  "schema_version": "v2.3",
+  "name_for_human": "PO Reconciler",
+  "description_for_human": "Reconcile purchase orders against ERP data, generate credit notes and re-invoices",
+  "namespace": "addinfunction",
+  "functions": [
+    {
+      "name": "ReconcilePO",
+      "description": "Reconciles a customer PO against ERP price data. Reads PO data from the 'PO' named range or first sheet, reads ERP data from the currently selected range, compares prices per SKU, and writes a reconciliation results sheet with color-coded status (Match, Tolerance, Exception).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tolerance": {
+            "type": "number",
+            "description": "Price tolerance threshold in currency units. Differences below this are marked as 'within tolerance' rather than exceptions. Default: 0.02",
+            "default": 0.02
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code: GBP, USD, or EUR. Determines formatting in the results sheet. Default: GBP",
+            "default": "GBP"
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "A summary of reconciliation results including total items, matches, exceptions, and total exposure."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`ReconcilePO` compares every line item's price from the customer PO against the corresponding SKU price in the ERP data. It normalizes SKU formats, handles prefix matching (e.g., PO '1234' matching ERP '1234V001'), and calculates price differences.",
+          "instructions": "Before running, confirm the user has: (1) PO data loaded or uploaded, and (2) ERP data selected in Excel. If the user mentions a tolerance or currency, pass those parameters. Default tolerance is 0.02 (2p) and default currency is GBP."
+        },
+        "responding": {
+          "description": "Report the reconciliation summary clearly.",
+          "instructions": "Present the results as: total items, perfect matches, within tolerance, exceptions, and total exposure in the user's currency. If there are exceptions, recommend generating a credit note and re-invoice. Mention that a detailed results sheet has been created with color coding."
+        }
+      }
+    },
+    {
+      "name": "GenerateCreditNote",
+      "description": "Generates a credit note sheet from the last reconciliation results. Credits ALL PO lines at their original PO prices (company policy: credit everything, then re-invoice with correct prices).",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Confirmation with the credit note sheet name, number of lines, and total credit amount."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateCreditNote` creates a formatted Excel sheet with a credit note for all PO line items. It uses the original PO prices as negative amounts.",
+          "instructions": "Only run this after a reconciliation has been completed. If no reconciliation results exist, ask the user to run ReconcilePO first."
+        },
+        "responding": {
+          "description": "Report the credit note details.",
+          "instructions": "Tell the user the credit note sheet name, total lines credited, and the total credit amount. Mention the sheet has been activated so they can review it."
+        }
+      }
+    },
+    {
+      "name": "GenerateReInvoice",
+      "description": "Generates a corrected re-invoice sheet using ERP prices for all lines. Highlights rows where the price changed from the original PO price.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Confirmation with the re-invoice sheet name, number of lines, total invoice amount, and count of price corrections."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateReInvoice` creates a formatted Excel sheet with a corrected invoice using ERP (correct) prices for all lines.",
+          "instructions": "Only run this after a reconciliation has been completed. If no reconciliation results exist, ask the user to run ReconcilePO first."
+        },
+        "responding": {
+          "description": "Report the re-invoice details.",
+          "instructions": "Tell the user the re-invoice sheet name, total lines, corrected total, and how many prices were changed. Mention yellow-highlighted rows indicate corrections."
+        }
+      }
+    },
+    {
+      "name": "DraftExceptionEmail",
+      "description": "Generates an email draft summarizing the reconciliation exceptions. Returns the email subject and body text.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "The email subject and body text for the exception report."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`DraftExceptionEmail` creates a professional email draft listing the top pricing exceptions from the reconciliation.",
+          "instructions": "Only run this after a reconciliation has been completed. If no reconciliation results exist, ask the user to run ReconcilePO first."
+        },
+        "responding": {
+          "description": "Present the email draft.",
+          "instructions": "Show the email subject and body to the user. Offer to copy it to clipboard or open the email client."
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "LocalPlugin",
+      "spec": {
+        "local_endpoint": "Microsoft.Office.Addin",
+        "allowed_host": ["workbook"]
+      },
+      "run_for_functions": ["ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail"],
+      "auth": {
+        "type": "None"
+      }
+    }
+  ]
+}

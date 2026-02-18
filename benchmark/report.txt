@@ -1,0 +1,255 @@
+═══════════════════════════════════════════════════════════════
+  PO RECONCILER — BENCHMARK REPORT
+  2026-02-18T11:14:27.823Z
+═══════════════════════════════════════════════════════════════
+
+┌─ Small PO — 25 lines (routine daily order)
+│
+│  Reconciliation Results:
+│    Lines: 26  |  Matches: 22  |  Tolerance: 1  |  Exceptions: 2  |  Warnings: 0
+│    Exposure: £0.00
+│    Engine time: 3.57ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│     7m 30s  Per line: find SKU in ERP, compare price, note result
+│         1m  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    25m 20s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         1s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        38s  TOTAL
+│
+│  ▸ Time saved: 24m 42s (97.48% reduction)
+│  ▸ Manual: 25m 20s  →  Add-in: 38s
+└──────────────────────────────────────────────────────────
+
+┌─ Medium PO — 80 lines (typical weekly retailer order)
+│
+│  Reconciliation Results:
+│    Lines: 84  |  Matches: 49  |  Tolerance: 11  |  Exceptions: 20  |  Warnings: 0
+│    Exposure: £17.70
+│    Engine time: 0.69ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│        24m  Per line: find SKU in ERP, compare price, note result
+│        10m  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    50m 50s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         2s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        39s  TOTAL
+│
+│  ▸ Time saved: 50m 11s (98.73% reduction)
+│  ▸ Manual: 50m 50s  →  Add-in: 39s
+└──────────────────────────────────────────────────────────
+
+┌─ Large PO — 200 lines (major retailer replenishment)
+│
+│  Reconciliation Results:
+│    Lines: 210  |  Matches: 121  |  Tolerance: 31  |  Exceptions: 48  |  Warnings: 0
+│    Exposure: £56.62
+│    Engine time: 2.65ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│        60m  Per line: find SKU in ERP, compare price, note result
+│        24m  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    100m 50s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         3s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        40s  TOTAL
+│
+│  ▸ Time saved: 100m 10s (99.34% reduction)
+│  ▸ Manual: 100m 50s  →  Add-in: 40s
+└──────────────────────────────────────────────────────────
+
+┌─ XL PO — 500 lines (seasonal bulk order)
+│
+│  Reconciliation Results:
+│    Lines: 525  |  Matches: 267  |  Tolerance: 61  |  Exceptions: 172  |  Warnings: 0
+│    Exposure: £197.63
+│    Engine time: 1.73ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│       150m  Per line: find SKU in ERP, compare price, note result
+│        86m  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    252m 50s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         6s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        43s  TOTAL
+│
+│  ▸ Time saved: 252m 7s (99.72% reduction)
+│  ▸ Manual: 252m 50s  →  Add-in: 43s
+└──────────────────────────────────────────────────────────
+
+┌─ Clean PO — 100 lines (well-maintained catalogue)
+│
+│  Reconciliation Results:
+│    Lines: 101  |  Matches: 80  |  Tolerance: 12  |  Exceptions: 8  |  Warnings: 0
+│    Exposure: £10.12
+│    Engine time: 3.46ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│        30m  Per line: find SKU in ERP, compare price, note result
+│         4m  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    50m 50s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         2s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        39s  TOTAL
+│
+│  ▸ Time saved: 50m 11s (98.72% reduction)
+│  ▸ Manual: 50m 50s  →  Add-in: 39s
+└──────────────────────────────────────────────────────────
+
+┌─ Messy PO — 100 lines (new customer, many discrepancies)
+│
+│  Reconciliation Results:
+│    Lines: 110  |  Matches: 31  |  Tolerance: 4  |  Exceptions: 65  |  Warnings: 0
+│    Exposure: £57.11
+│    Engine time: 0.16ms
+│
+│  Manual Workflow (estimated):
+│        30s  Open PO file, identify SKU/price columns
+│        20s  Open ERP price list / query screen
+│        30m  Per line: find SKU in ERP, compare price, note result
+│    32m 30s  Per exception: highlight, note diff, calculate exposure
+│         2m  Count matches/exceptions, sum exposure manually
+│         3m  Format results into email or spreadsheet
+│         2m  Draft exception email to team
+│         5m  Build credit note spreadsheet (if exceptions)
+│         4m  Build re-invoice spreadsheet (if exceptions)
+│    ───────
+│    79m 20s  TOTAL
+│
+│  Add-in Workflow (estimated):
+│         5s  Upload PO file (drag & drop or browse)
+│         8s  Select ERP range in Excel, click Load
+│         2s  Click Reconcile, wait for engine
+│        15s  Review results summary + scroll exceptions
+│         5s  Click Draft Email + copy/send
+│         2s  Click Generate Credit Note
+│         2s  Click Generate Re-Invoice
+│    ───────
+│        39s  TOTAL
+│
+│  ▸ Time saved: 78m 41s (99.18% reduction)
+│  ▸ Manual: 79m 20s  →  Add-in: 39s
+└──────────────────────────────────────────────────────────
+
+═══════════════════════════════════════════════════════════════
+  SUMMARY
+═══════════════════════════════════════════════════════════════
+
+  Scenario                                    Lines   Manual      Add-in     Saved    %
+  ─────────────────────────────────────────── ─────   ─────────   ────────   ──────   ──
+  Small PO                                         25     25m 20s        38s   24m 42s   97.48%
+  Medium PO                                        80     50m 50s        39s   50m 11s   98.73%
+  Large PO                                        200    100m 50s        40s   100m 10s   99.34%
+  XL PO                                           500    252m 50s        43s   252m 7s   99.72%
+  Clean PO                                        100     50m 50s        39s   50m 11s   98.72%
+  Messy PO                                        100     79m 20s        39s   78m 41s   99.18%
+
+═══════════════════════════════════════════════════════════════
+  DAILY IMPACT PROJECTION
+  Assumes: 8 POs/day, avg 80 lines, 15% exception rate
+═══════════════════════════════════════════════════════════════
+
+  Per PO:     50m 50s → 39s  (saves 50m 11s)
+  Per day:    406m 40s → 5m 10s  (saves 401m 30s)
+  Per week:   2033m 20s → 25m 52s  (saves 2007m 28s)
+  Per month:  8133m 20s → 103m 28s  (saves 8029m 52s)
+
+  Annual time saved: ~1606 hours/year per operator
+
+═══════════════════════════════════════════════════════════════
+  ENGINE PERFORMANCE
+═══════════════════════════════════════════════════════════════
+
+  Small PO                25 lines  →    3.57ms
+  Medium PO               80 lines  →    0.69ms
+  Large PO               200 lines  →    2.65ms
+  XL PO                  500 lines  →    1.73ms
+  Clean PO               100 lines  →    3.46ms
+  Messy PO               100 lines  →    0.16ms
+
+═══════════════════════════════════════════════════════════════
+  END OF BENCHMARK
+═══════════════════════════════════════════════════════════════
+

@@ -46,6 +46,10 @@ module.exports = (env, argv) => {
         patterns: [
           { from: "assets", to: "assets" },
           { from: "manifest.xml", to: "manifest.xml" },
+          // Agent config files — copied to dist for Copilot deployment
+          { from: "appPackage/manifest.json", to: "appPackage/manifest.json" },
+          { from: "appPackage/declarativeAgent.json", to: "declarativeAgent.json" },
+          { from: "appPackage/Office-API-local-plugin.json", to: "Office-API-local-plugin.json" },
         ],
       }),
     ],
