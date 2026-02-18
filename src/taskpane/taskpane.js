@@ -10,6 +10,8 @@ import { formatCurrency, setCurrency } from "../utils/format";
 import { detectAllColumns, extractPOData } from "../capture/extractor";
 import { writeStagingSheet } from "../capture/staging";
 import { validate, formatValidationReport } from "../validate/validator";
+import { generateStagingEntry } from "../entry/entry";
+import { writeEntrySheet } from "../entry/entry-results";
 
 /* global Office, Excel */
 
@@ -62,6 +64,7 @@ function initUI(browserMode) {
     emailBtn: document.getElementById("email-btn"),
     creditNoteBtn: document.getElementById("credit-note-btn"),
     reinvoiceBtn: document.getElementById("reinvoice-btn"),
+    erpStagingBtn: document.getElementById("erp-staging-btn"),
     emailSection: document.getElementById("email-section"),
     emailDraft: document.getElementById("email-draft"),
     copyEmailBtn: document.getElementById("copy-email-btn"),
@@ -117,6 +120,7 @@ function initUI(browserMode) {
   els.copyEmailBtn.addEventListener("click", handleCopyEmail);
   els.creditNoteBtn.addEventListener("click", handleCreditNote);
   els.reinvoiceBtn.addEventListener("click", handleReInvoice);
+  els.erpStagingBtn.addEventListener("click", handleERPStaging);
   els.extractBtn.addEventListener("click", handleExtract);
   els.applyPoColumns.addEventListener("click", () => applyManualColumns("po"));
   els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
@@ -488,6 +492,30 @@ async function handleReInvoice() {
     showError(err.message);
   } finally {
     els.reinvoiceBtn.disabled = false;
+  }
+}
+
+// --- ERP Staging ---
+
+async function handleERPStaging() {
+  if (!state.results) return;
+  try {
+    els.erpStagingBtn.disabled = true;
+    setStatus(els.actionStatus, "Generating ERP staging...", "");
+    const entryData = generateStagingEntry(state.results, {
+      poRef: state.poFilename,
+      customer: "",
+    });
+    if (!state.browserMode) {
+      await writeEntrySheet(entryData);
+    }
+    const t = entryData.totals;
+    setStatus(els.actionStatus, `ERP staging: ${t.readyCount} ready, ${t.reviewCount} review, ${t.holdCount} hold`, "success");
+    setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    els.erpStagingBtn.disabled = false;
   }
 }
 

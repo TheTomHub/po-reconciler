@@ -10,6 +10,8 @@ import { formatCurrency, setCurrency, parseNumber } from "../utils/format";
 import { detectAllColumns, extractPOData } from "../capture/extractor";
 import { writeStagingSheet } from "../capture/staging";
 import { validate, formatValidationReport } from "../validate/validator";
+import { generateStagingEntry } from "../entry/entry";
+import { writeEntrySheet } from "../entry/entry-results";
 
 /**
  * Shared state for agent actions within a session.
@@ -270,6 +272,38 @@ async function handleExtractPOData(message) {
   return response;
 }
 
+// ── GenerateERPStaging ──
+
+async function handleGenerateERPStaging(message) {
+  if (!agentState.results) {
+    return "No reconciliation results available. Please run ReconcilePO first.";
+  }
+
+  const params = message ? JSON.parse(message) : {};
+
+  const entryData = generateStagingEntry(agentState.results, {
+    poRef: agentState.poFilename,
+    customer: params.customer || "",
+    deliveryDate: params.deliveryDate || "",
+  });
+
+  await writeEntrySheet(entryData);
+
+  const t = entryData.totals;
+  const m = entryData.metadata;
+  let response = `ERP staging sheet created.\n\n`;
+  response += `PO Reference: ${m.poRef}\n`;
+  response += `Total lines: ${t.lineCount}\n`;
+  response += `Total value: ${formatCurrency(t.totalValue)}\n\n`;
+  response += `Status breakdown:\n`;
+  response += `  Ready (green):  ${t.readyCount} — safe to enter into ERP\n`;
+  response += `  Review (yellow): ${t.reviewCount} — price exceptions, operator decision needed\n`;
+  response += `  Hold (red):     ${t.holdCount} — missing from ERP or data issue\n\n`;
+  response += `The ERPStaging sheet has been activated. Green rows can be entered directly. Yellow rows need price confirmation. Red rows need item verification.`;
+
+  return response;
+}
+
 // ── Register agent actions ──
 
 Office.actions.associate("ExtractPOData", async (message) => {
@@ -307,6 +341,14 @@ Office.actions.associate("GenerateReInvoice", async () => {
 Office.actions.associate("DraftExceptionEmail", async () => {
   try {
     return await handleDraftExceptionEmail();
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+});
+
+Office.actions.associate("GenerateERPStaging", async (message) => {
+  try {
+    return await handleGenerateERPStaging(message);
   } catch (err) {
     return `Error: ${err.message}`;
   }

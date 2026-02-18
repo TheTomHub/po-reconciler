@@ -664,9 +664,92 @@ for (const row of (byStatus["Exception"] || [])) {
   console.log(`    ${row.sku} ${(row.name || "").padEnd(30)} PO: £${row.poPrice?.toFixed(2)}  ERP: £${row.erpPrice?.toFixed(2)}  diff: £${row.diff?.toFixed(2)}`);
 }
 
-// ── Step 6: Credit Note ──
+// ── Step 6: Staged Entry ──
 
-console.log("\nStep 6: Generate credit note");
+console.log("\nStep 6: Generate ERP staging data");
+
+// Inline staging entry generator (from src/entry/entry.js)
+function generateStagingEntry(results, options = {}) {
+  const entryRows = [];
+  let totalValue = 0, readyCount = 0, reviewCount = 0, holdCount = 0, lineNum = 0;
+
+  for (const row of results.rows) {
+    if (row.status === "Not in PO") continue;
+    if (row.poPrice == null && row.erpPrice == null) continue;
+    lineNum++;
+
+    let entryPrice, status, notes;
+    switch (row.status) {
+      case "Match":
+        entryPrice = row.erpPrice ?? row.poPrice; status = "Ready"; notes = ""; break;
+      case "Tolerance":
+        entryPrice = row.erpPrice ?? row.poPrice; status = "Ready"; notes = `Within tolerance (diff: ${row.diff})`; break;
+      case "Exception":
+        entryPrice = row.erpPrice ?? row.poPrice; status = "Review"; notes = `Price exception: PO ${row.poPrice} vs ERP ${row.erpPrice}`; break;
+      case "Not in ERP":
+        entryPrice = row.poPrice; status = "Hold"; notes = "SKU not found in ERP"; break;
+      case "Warning":
+        entryPrice = row.poPrice ?? 0; status = "Hold"; notes = row.action || "Data quality issue"; break;
+      default:
+        entryPrice = row.erpPrice ?? row.poPrice ?? 0; status = "Review"; notes = "";
+    }
+
+    const qty = row.poQty || 1;
+    const lineTotal = round(entryPrice * qty);
+    totalValue = round(totalValue + lineTotal);
+
+    if (status === "Ready") readyCount++;
+    else if (status === "Review") reviewCount++;
+    else holdCount++;
+
+    entryRows.push({ lineNum, sku: row.sku, erpSku: row.erpSku || "", name: row.name || "", qty, uom: "EA", entryPrice, lineTotal, status, notes });
+  }
+
+  return {
+    entryRows,
+    totals: { lineCount: entryRows.length, totalValue, readyCount, reviewCount, holdCount },
+    metadata: { poRef: options.poRef || "Unknown", customer: options.customer || "Unknown", generatedAt: new Date().toISOString() },
+  };
+}
+
+const entryData = generateStagingEntry(results, { poRef: "PO-2025-0247", customer: "Tesco Stores Ltd" });
+
+assertEq(entryData.entryRows.length, 50, `ERP staging has 50 lines (excludes ERP-only)`);
+assert(entryData.totals.totalValue > 5000, `Total value: £${entryData.totals.totalValue.toFixed(2)} (>£5000)`);
+assert(entryData.totals.readyCount >= 35, `Ready (green): ${entryData.totals.readyCount} (≥35)`);
+assert(entryData.totals.reviewCount >= 8, `Review (yellow): ${entryData.totals.reviewCount} (≥8)`);
+assert(entryData.totals.holdCount >= 1, `Hold (red): ${entryData.totals.holdCount} (≥1)`);
+
+// Verify ready + review + hold = total
+assertEq(entryData.totals.readyCount + entryData.totals.reviewCount + entryData.totals.holdCount, entryData.totals.lineCount, `Status counts sum to total lines`);
+
+// Verify "Not in PO" rows are excluded
+const erpOnlyInStaging = entryData.entryRows.filter((r) => r.sku === "1051V001" || r.sku === "1052V002" || r.sku === "1053V003");
+assertEq(erpOnlyInStaging.length, 0, `ERP-only SKUs excluded from staging`);
+
+// Verify "Not in ERP" row is on hold
+const vitaminD = entryData.entryRows.find((r) => r.sku === "1049");
+assert(vitaminD && vitaminD.status === "Hold", `Vitamin D (1049) is on Hold`);
+
+// Verify exceptions use ERP price
+const chickenEntry = entryData.entryRows.find((r) => r.sku === "1008V003");
+assert(chickenEntry && chickenEntry.entryPrice === 4.49, `Chicken uses ERP price (£4.49) not PO price`);
+assertEq(chickenEntry.status, "Review", `Chicken is flagged for Review`);
+
+// Verify matches use ERP price
+const teaEntry = entryData.entryRows.find((r) => r.sku === "1001V001");
+assert(teaEntry && teaEntry.entryPrice === 2.49, `Tea uses correct price (£2.49)`);
+assertEq(teaEntry.status, "Ready", `Tea is Ready`);
+
+// Staging total should be higher than extraction total (ERP prices are generally higher in this test set)
+assert(entryData.totals.totalValue > extraction.metadata.totalValue, `Staging total (£${entryData.totals.totalValue.toFixed(2)}) > PO total (£${extraction.metadata.totalValue.toFixed(2)}) — uses corrected ERP prices`);
+
+console.log(`\n  Breakdown: ${entryData.totals.readyCount} ready / ${entryData.totals.reviewCount} review / ${entryData.totals.holdCount} hold`);
+console.log(`  Total value: £${entryData.totals.totalValue.toFixed(2)}`);
+
+// ── Step 7: Credit Note ──
+
+console.log("\nStep 7: Generate credit note");
 
 const creditNote = generateCreditNote(results);
 assert(creditNote.creditRows.length >= 48, `Credit note covers ${creditNote.creditRows.length} lines (all PO lines)`);
@@ -676,9 +759,9 @@ assert(creditNote.totals.totalCredit < 0, `Total credit is negative: £${creditN
 const poTotal = extraction.metadata.totalValue;
 assertEq(creditNote.totals.totalCredit, round(-poTotal), `Credit total (£${creditNote.totals.totalCredit.toFixed(2)}) = -PO total (£${poTotal.toFixed(2)})`);
 
-// ── Step 7: Re-Invoice ──
+// ── Step 8: Re-Invoice ──
 
-console.log("\nStep 7: Generate corrected re-invoice");
+console.log("\nStep 8: Generate corrected re-invoice");
 
 const reInvoice = generateCorrectedInvoice(results);
 assert(reInvoice.invoiceRows.length >= 48, `Re-invoice covers ${reInvoice.invoiceRows.length} lines`);
@@ -694,9 +777,9 @@ assert(reInvoice.totals.totalInvoice !== poTotal, `Re-invoice total (£${reInvoi
 const netEffect = round(creditNote.totals.totalCredit + reInvoice.totals.totalInvoice);
 console.log(`  Net effect: £${creditNote.totals.totalCredit.toFixed(2)} (credit) + £${reInvoice.totals.totalInvoice.toFixed(2)} (re-invoice) = £${netEffect.toFixed(2)}`);
 
-// ── Step 8: Email Draft ──
+// ── Step 9: Email Draft ──
 
-console.log("\nStep 8: Generate email draft");
+console.log("\nStep 9: Generate email draft");
 
 const email = generateEmailDraft(results, "tesco-po-2025-0247.csv");
 assert(email.subject.includes("PO-2025-0247"), `Email subject contains PO ref`);
