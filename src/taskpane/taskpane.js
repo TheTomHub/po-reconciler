@@ -7,6 +7,8 @@ import { generateEmailDraft, buildMailtoLink } from "../email/email";
 import { generateCreditNote, generateCorrectedInvoice } from "../reconcile/creditnote";
 import { writeCreditNoteSheet, writeReInvoiceSheet } from "../reconcile/creditnote-results";
 import { formatCurrency, setCurrency } from "../utils/format";
+import { detectAllColumns, extractPOData } from "../capture/extractor";
+import { writeStagingSheet } from "../capture/staging";
 
 /* global Office, Excel */
 
@@ -90,6 +92,9 @@ function initUI(browserMode) {
     actionsHint: document.getElementById("actions-hint"),
     actionsContent: document.getElementById("actions-content"),
     tabActions: document.querySelector('[data-tab="actions"]'),
+    // Capture module
+    extractBtn: document.getElementById("extract-btn"),
+    extractStatus: document.getElementById("extract-status"),
   };
 
   // Event listeners
@@ -106,6 +111,7 @@ function initUI(browserMode) {
   els.copyEmailBtn.addEventListener("click", handleCopyEmail);
   els.creditNoteBtn.addEventListener("click", handleCreditNote);
   els.reinvoiceBtn.addEventListener("click", handleReInvoice);
+  els.extractBtn.addEventListener("click", handleExtract);
   els.applyPoColumns.addEventListener("click", () => applyManualColumns("po"));
   els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
 
@@ -352,6 +358,37 @@ async function handleReconcile() {
   }
 }
 
+// --- Extract to Staging ---
+
+async function handleExtract() {
+  if (!state.poData || !state.poColumns) return;
+
+  hideError();
+  els.extractBtn.disabled = true;
+  setStatus(els.extractStatus, "Extracting...", "");
+
+  try {
+    const columns = detectAllColumns(state.poData.headers);
+    const extraction = extractPOData(state.poData, columns);
+
+    if (!state.browserMode) {
+      await writeStagingSheet(extraction);
+    }
+
+    const m = extraction.metadata;
+    let statusText = `Staging sheet created: ${m.lineCount} lines, ${formatCurrency(m.totalValue)}`;
+    if (m.warningCount > 0) {
+      statusText += ` (${m.warningCount} warnings)`;
+    }
+    setStatus(els.extractStatus, statusText, "success");
+  } catch (err) {
+    setStatus(els.extractStatus, "", "");
+    showError(err.message);
+  } finally {
+    els.extractBtn.disabled = false;
+  }
+}
+
 // --- Email ---
 
 function handleShowEmail() {
@@ -460,6 +497,8 @@ function updateReconcileButton() {
     state.poData && state.poColumns &&
     state.erpData && state.erpColumns;
   els.reconcileBtn.disabled = !ready;
+  // Enable extract button when PO data is loaded (doesn't need ERP data)
+  els.extractBtn.disabled = !(state.poData && state.poColumns);
 }
 
 function setStatus(el, text, type) {

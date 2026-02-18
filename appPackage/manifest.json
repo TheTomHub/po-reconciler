@@ -56,6 +56,10 @@
           "lifetime": "short",
           "actions": [
             {
+              "id": "ExtractPOData",
+              "type": "executeDataFunction"
+            },
+            {
               "id": "ReconcilePO",
               "type": "executeDataFunction"
             },

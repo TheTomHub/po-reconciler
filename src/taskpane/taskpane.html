@@ -33,6 +33,10 @@
             <input type="file" id="po-file-input" accept=".xlsx,.xls,.csv,.pdf" hidden>
             <span class="status" id="po-status">No file selected</span>
           </div>
+          <div class="step-body" style="margin-top:6px">
+            <button id="extract-btn" class="btn btn-sm" disabled>Extract to Staging Sheet</button>
+            <span class="status" id="extract-status"></span>
+          </div>
           <p class="step-hint">Zendesk HTML POs: save as .xlsx first.</p>
           <!-- Manual column selection (hidden by default) -->
           <div id="manual-columns-po" class="manual-columns" hidden>
