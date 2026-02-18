@@ -9,6 +9,7 @@ import { writeCreditNoteSheet, writeReInvoiceSheet } from "../reconcile/creditno
 import { formatCurrency, setCurrency } from "../utils/format";
 import { detectAllColumns, extractPOData } from "../capture/extractor";
 import { writeStagingSheet } from "../capture/staging";
+import { validate, formatValidationReport } from "../validate/validator";
 
 /* global Office, Excel */
 
@@ -95,6 +96,11 @@ function initUI(browserMode) {
     // Capture module
     extractBtn: document.getElementById("extract-btn"),
     extractStatus: document.getElementById("extract-status"),
+    // Validation
+    validationSection: document.getElementById("validation-section"),
+    validationBadge: document.getElementById("validation-badge"),
+    validationDetails: document.getElementById("validation-details"),
+    validationReport: document.getElementById("validation-report"),
   };
 
   // Event listeners
@@ -365,6 +371,7 @@ async function handleExtract() {
 
   hideError();
   els.extractBtn.disabled = true;
+  els.validationSection.hidden = true;
   setStatus(els.extractStatus, "Extracting...", "");
 
   try {
@@ -375,10 +382,15 @@ async function handleExtract() {
       await writeStagingSheet(extraction);
     }
 
+    // Run validation
+    const validation = validate(extraction.stagingRows);
+    state.validation = validation;
+    showValidationResults(validation);
+
     const m = extraction.metadata;
-    let statusText = `Staging sheet created: ${m.lineCount} lines, ${formatCurrency(m.totalValue)}`;
+    let statusText = `${m.lineCount} lines, ${formatCurrency(m.totalValue)}`;
     if (m.warningCount > 0) {
-      statusText += ` (${m.warningCount} warnings)`;
+      statusText += ` (${m.warningCount} extraction warnings)`;
     }
     setStatus(els.extractStatus, statusText, "success");
   } catch (err) {
@@ -387,6 +399,32 @@ async function handleExtract() {
   } finally {
     els.extractBtn.disabled = false;
   }
+}
+
+function showValidationResults(validation) {
+  els.validationSection.hidden = false;
+  els.validationDetails.hidden = true;
+
+  const badge = els.validationBadge;
+  const report = formatValidationReport(validation);
+
+  if (!validation.valid) {
+    badge.className = "validation-badge has-errors";
+    badge.textContent = `${validation.summary.errors} error(s) — click to expand`;
+  } else if (validation.summary.warnings > 0) {
+    badge.className = "validation-badge has-warnings";
+    badge.textContent = `Passed with ${validation.summary.warnings} warning(s)`;
+  } else {
+    badge.className = "validation-badge passed";
+    badge.textContent = "Validation passed";
+  }
+
+  els.validationReport.textContent = report;
+
+  // Toggle details on badge click
+  badge.onclick = () => {
+    els.validationDetails.hidden = !els.validationDetails.hidden;
+  };
 }
 
 // --- Email ---

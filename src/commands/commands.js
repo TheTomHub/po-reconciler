@@ -9,6 +9,7 @@ import { generateEmailDraft } from "../email/email";
 import { formatCurrency, setCurrency, parseNumber } from "../utils/format";
 import { detectAllColumns, extractPOData } from "../capture/extractor";
 import { writeStagingSheet } from "../capture/staging";
+import { validate, formatValidationReport } from "../validate/validator";
 
 /**
  * Shared state for agent actions within a session.
@@ -227,8 +228,12 @@ async function handleExtractPOData(message) {
   // Write staging sheet
   await writeStagingSheet(extraction);
 
+  // Run validation
+  const validation = validate(extraction.stagingRows);
+
   // Store for potential follow-up reconciliation
   agentState.lastExtraction = extraction;
+  agentState.lastValidation = validation;
 
   // Format response
   const m = extraction.metadata;
@@ -240,8 +245,12 @@ async function handleExtractPOData(message) {
   response += `Total value: ${formatCurrency(m.totalValue)}\n`;
   response += `Detected fields: ${detectedStr}\n`;
 
+  // Validation results
+  response += `\n--- Validation ---\n`;
+  response += formatValidationReport(validation);
+
   if (m.warningCount > 0) {
-    response += `\nWarnings: ${m.warningCount}\n`;
+    response += `\n\nExtraction warnings: ${m.warningCount}\n`;
     const topWarnings = extraction.warnings.slice(0, 5);
     for (const w of topWarnings) {
       response += `  Line ${w.line}: ${w.field} — ${w.message}\n`;
@@ -250,8 +259,12 @@ async function handleExtractPOData(message) {
       response += `  ... and ${extraction.warnings.length - 5} more (see Warnings sheet)\n`;
     }
     response += `\nYellow-highlighted rows need review. Check cell notes for details.`;
+  }
+
+  if (!validation.valid) {
+    response += `\n\nValidation errors must be resolved before reconciliation.`;
   } else {
-    response += `\nNo warnings — all data looks clean.`;
+    response += `\n\nData is ready for reconciliation.`;
   }
 
   return response;

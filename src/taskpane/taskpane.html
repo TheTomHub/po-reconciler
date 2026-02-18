@@ -37,6 +37,13 @@
             <button id="extract-btn" class="btn btn-sm" disabled>Extract to Staging Sheet</button>
             <span class="status" id="extract-status"></span>
           </div>
+          <!-- Validation Results -->
+          <div id="validation-section" class="validation-section" hidden>
+            <div id="validation-badge" class="validation-badge"></div>
+            <div id="validation-details" class="validation-details" hidden>
+              <pre id="validation-report"></pre>
+            </div>
+          </div>
           <p class="step-hint">Zendesk HTML POs: save as .xlsx first.</p>
           <!-- Manual column selection (hidden by default) -->
           <div id="manual-columns-po" class="manual-columns" hidden>
