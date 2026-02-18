@@ -1,0 +1,133 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
+  "manifestVersion": "devPreview",
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "version": "2.0.0",
+  "name": {
+    "short": "PO Reconciler",
+    "full": "PO Reconciler — Order Processing Suite"
+  },
+  "description": {
+    "short": "Reconcile customer POs against ERP data in Excel",
+    "full": "Automated PO price reconciliation with credit note generation, re-invoicing, and exception reporting. Works as both an Excel add-in task pane and a Copilot agent."
+  },
+  "developer": {
+    "name": "PO Reconciler",
+    "websiteUrl": "https://thetomhub.github.io/po-reconciler",
+    "privacyUrl": "https://thetomhub.github.io/po-reconciler",
+    "termsOfUseUrl": "https://thetomhub.github.io/po-reconciler"
+  },
+  "icons": {
+    "outline": "assets/outline.png",
+    "color": "assets/color.png"
+  },
+  "accentColor": "#1F4E79",
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        {
+          "name": "Document.ReadWrite.User",
+          "type": "Delegated"
+        }
+      ]
+    }
+  },
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "POReconcilerAgent",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "extensions": [
+    {
+      "requirements": {
+        "scopes": ["workbook"]
+      },
+      "runtimes": [
+        {
+          "id": "CommandsRuntime",
+          "type": "general",
+          "code": {
+            "page": "https://thetomhub.github.io/po-reconciler/commands.html",
+            "script": "https://thetomhub.github.io/po-reconciler/commands.js"
+          },
+          "lifetime": "short",
+          "actions": [
+            {
+              "id": "ReconcilePO",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateCreditNote",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateReInvoice",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "DraftExceptionEmail",
+              "type": "executeDataFunction"
+            }
+          ]
+        },
+        {
+          "id": "TaskpaneRuntime",
+          "type": "general",
+          "code": {
+            "page": "https://thetomhub.github.io/po-reconciler/taskpane.html"
+          },
+          "lifetime": "long",
+          "actions": [
+            {
+              "id": "ShowTaskpane",
+              "type": "openPage",
+              "view": "taskpane"
+            }
+          ]
+        }
+      ],
+      "ribbons": [
+        {
+          "contexts": ["default"],
+          "tabs": [
+            {
+              "id": "TabPOReconciler",
+              "label": "PO Reconciler",
+              "groups": [
+                {
+                  "id": "CommandsGroup",
+                  "label": "Reconciliation",
+                  "icons": [
+                    { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
+                    { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
+                    { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-64.png" }
+                  ],
+                  "controls": [
+                    {
+                      "id": "TaskpaneButton",
+                      "type": "button",
+                      "label": "Open Reconciler",
+                      "icons": [
+                        { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
+                        { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
+                        { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-64.png" }
+                      ],
+                      "supertip": {
+                        "title": "Open Reconciler",
+                        "description": "Open the PO Reconciler task pane"
+                      },
+                      "actionId": "ShowTaskpane"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
