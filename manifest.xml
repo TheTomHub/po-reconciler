@@ -8,10 +8,10 @@
 
   <Id>a1b2c3d4-e5f6-7890-abcd-ef1234567890</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>PO Reconciler</ProviderName>
+  <ProviderName>Chandlr</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="PO Reconciler"/>
-  <Description DefaultValue="Automated PO reconciliation against ERP exports"/>
+  <DisplayName DefaultValue="Chandlr"/>
+  <Description DefaultValue="Order processing suite — reconciliation, credit notes, staging"/>
   <IconUrl DefaultValue="https://thetomhub.github.io/po-reconciler/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://thetomhub.github.io/po-reconciler/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://thetomhub.github.io/po-reconciler"/>
@@ -89,14 +89,14 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://thetomhub.github.io/po-reconciler"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="PO Reconciler"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Reconciliation"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Open Reconciler"/>
-        <bt:String id="TabLabel" DefaultValue="PO Reconciler"/>
+        <bt:String id="GetStarted.Title" DefaultValue="Chandlr"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="Order Processing"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Open Chandlr"/>
+        <bt:String id="TabLabel" DefaultValue="Chandlr"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Reconcile customer POs against ERP exports with a single click."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open the PO Reconciler task pane"/>
+        <bt:String id="GetStarted.Description" DefaultValue="Order processing made simple — reconcile, extract, resolve."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Open the Chandlr task pane"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
