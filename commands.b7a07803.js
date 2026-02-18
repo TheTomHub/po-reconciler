@@ -1,0 +1,1 @@
+Office.onReady(()=>{}),Office.actions=Office.actions||{},Office.actions.associate("reconcileFromRibbon",function(i){Office.context.ui.displayDialogAsync("https://thetomhub.github.io/po-reconciler/taskpane.html",{height:60,width:30},t=>{t.status,Office.AsyncResultStatus.Failed,i.completed()})});
