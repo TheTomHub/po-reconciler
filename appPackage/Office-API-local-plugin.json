@@ -1,8 +1,8 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.3/schema.json",
   "schema_version": "v2.3",
-  "name_for_human": "PO Reconciler",
-  "description_for_human": "Extract PO data, reconcile against ERP, generate credit notes and re-invoices",
+  "name_for_human": "Chandlr",
+  "description_for_human": "Order processing made simple — extract, reconcile, resolve",
   "namespace": "addinfunction",
   "functions": [
     {

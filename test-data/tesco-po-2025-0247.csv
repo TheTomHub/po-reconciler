@@ -1,0 +1,56 @@
+Purchase Order,PO-2025-0247
+Customer,Tesco Stores Ltd
+Delivery Date,28/02/2025
+Ship To,Tesco DC Didcot
+
+Item Number,Description,Order Qty,Unit Price,UOM,Line Total
+1001V001,Organic Green Tea 250g,48,2.49,EA,119.52
+1002V002,Fair Trade Coffee Beans 1kg,24,5.99,EA,143.76
+1003V003,Wholemeal Bread 800g,120,1.29,EA,154.80
+1004V010,Free Range Eggs x12,96,2.89,EA,277.44
+1005V012,Semi-Skimmed Milk 2L,200,1.15,EA,230.00
+1006V001,Salted Butter 250g,72,1.79,EA,128.88
+1007V002,Cheddar Cheese Block 400g,60,3.49,EA,209.40
+1008V003,Chicken Breast Fillets 500g,48,4.29,EA,205.92
+1009V010,Atlantic Salmon Fillet 200g,36,3.99,EA,143.64
+1010V012,Basmati Rice 1kg,84,1.69,EA,141.96
+1011V001,Extra Virgin Olive Oil 500ml,40,3.89,EA,155.60
+1012V002,Balsamic Vinegar 250ml,30,2.29,EA,68.70
+1013V003,Penne Pasta 500g,100,0.89,EA,89.00
+1014V010,Chopped Tomatoes 400g,150,0.65,EA,97.50
+1015V012,Coconut Milk 400ml,60,1.19,EA,71.40
+1016V001,Greek Yoghurt 500g,80,1.99,EA,159.20
+1017V002,Granola Clusters 500g,45,3.29,EA,148.05
+1018V003,Orange Juice 1L,90,1.49,EA,134.10
+1019V010,Sparkling Water 6x500ml,36,2.79,EA,100.44
+1020V012,Dark Chocolate Bar 100g,72,1.59,EA,114.48
+1021V001,Honey Roast Ham 150g,50,2.69,EA,134.50
+1022V002,Sourdough Loaf 500g,60,2.19,EA,131.40
+1023V003,Almond Milk 1L,48,1.75,EA,84.00
+1024V010,Frozen Garden Peas 900g,80,1.39,EA,111.20
+1025V012,Vanilla Ice Cream 500ml,40,2.99,EA,119.60
+1026V001,Smoked Paprika 50g,24,1.89,EA,45.36
+1027V002,Sea Salt Flakes 250g,30,2.49,EA,74.70
+1028V003,Dishwasher Tablets x30,36,4.49,EA,161.64
+1029V010,Kitchen Roll 2pk,60,1.99,EA,119.40
+1030V012,Laundry Detergent 1.5L,40,3.79,EA,151.60
+1031V001,Hand Soap 250ml,48,0.99,EA,47.52
+1032V002,Toothpaste 75ml,36,1.49,EA,53.64
+1033V003,Shampoo 400ml,30,2.29,EA,68.70
+1034V010,Bin Liners 50pk,40,1.69,EA,67.60
+1035V012,Aluminium Foil 20m,24,1.89,EA,45.36
+1036V001,Cling Film 30m,30,1.49,EA,44.70
+1037V002,Dog Food Chicken 2kg,20,4.99,EA,99.80
+1038V003,Cat Food Pouches x12,24,3.99,EA,95.76
+1039V010,Oat Milk Barista 1L,60,1.89,EA,113.40
+1040V012,Vegan Sausages 6pk,36,2.79,EA,100.44
+1041V001,Rye Crackers 200g,24,1.99,EA,47.76
+1042V002,Hummus 300g,48,1.69,EA,81.12
+1043V003,Beetroot Relish 190g,20,2.49,EA,49.80
+1044V010,Mango Chutney 340g,24,1.99,EA,47.76
+1045V012,Worcestershire Sauce 150ml,30,1.79,EA,53.70
+1046,Baby Wipes 64pk,48,1.49,EA,71.52
+1047,Nappies Size 4 x40,36,6.99,EA,251.64
+1048,Ibuprofen Tablets x16,60,0.99,EA,59.40
+1049,Vitamin D 90 Caps,24,3.49,EA,83.76
+1050,Plant Butter 250g,40,2.29,EA,91.60

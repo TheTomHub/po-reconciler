@@ -4,15 +4,15 @@
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "version": "2.0.0",
   "name": {
-    "short": "PO Reconciler",
-    "full": "PO Reconciler — Order Processing Suite"
+    "short": "Chandlr",
+    "full": "Chandlr — Order Processing Suite"
   },
   "description": {
-    "short": "Reconcile customer POs against ERP data in Excel",
-    "full": "Automated PO price reconciliation with credit note generation, re-invoicing, and exception reporting. Works as both an Excel add-in task pane and a Copilot agent."
+    "short": "Order processing made simple — reconcile, extract, resolve",
+    "full": "Order processing suite: PO extraction, price reconciliation, credit notes, re-invoicing, and exception reporting. Works as both an Excel add-in and a Copilot agent."
   },
   "developer": {
-    "name": "PO Reconciler",
+    "name": "Chandlr",
     "websiteUrl": "https://thetomhub.github.io/po-reconciler",
     "privacyUrl": "https://thetomhub.github.io/po-reconciler",
     "termsOfUseUrl": "https://thetomhub.github.io/po-reconciler"
@@ -99,11 +99,11 @@
           "tabs": [
             {
               "id": "TabPOReconciler",
-              "label": "PO Reconciler",
+              "label": "Chandlr",
               "groups": [
                 {
                   "id": "CommandsGroup",
-                  "label": "Reconciliation",
+                  "label": "Order Processing",
                   "icons": [
                     { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
                     { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
@@ -113,15 +113,15 @@
                     {
                       "id": "TaskpaneButton",
                       "type": "button",
-                      "label": "Open Reconciler",
+                      "label": "Open Chandlr",
                       "icons": [
                         { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
                         { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
                         { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-64.png" }
                       ],
                       "supertip": {
-                        "title": "Open Reconciler",
-                        "description": "Open the PO Reconciler task pane"
+                        "title": "Open Chandlr",
+                        "description": "Open the Chandlr task pane"
                       },
                       "actionId": "ShowTaskpane"
                     }
