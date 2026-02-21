@@ -176,6 +176,29 @@
         }
       }
     }
+    ,{
+      "name": "GenerateDashboard",
+      "description": "Generates a Price Intelligence Dashboard from accumulated reconciliation history. Shows leading metrics: average price drift, exception rate, anomaly count, trend breakdown, top movers (biggest recent price changes), and a watch list of SKUs needing attention. History builds automatically with each reconciliation run.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Summary of price intelligence metrics, top movers, and watch list items."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateDashboard` reads the PriceHistory sheet (accumulated automatically from previous reconciliations), runs trend analysis and anomaly detection across all SKUs, and writes a Dashboard sheet with leading indicators.",
+          "instructions": "This function needs at least one prior reconciliation to have data. If the user asks about price trends, anomalies, or wants a dashboard, use this function. No parameters needed."
+        },
+        "responding": {
+          "description": "Present the price intelligence findings clearly.",
+          "instructions": "Highlight the key metrics: average price drift, exception rate, anomaly count. If there are top movers, call them out. If there are watch list items, explain what flags were raised. Mention that the Dashboard sheet has full details with color coding."
+        }
+      }
+    }
   ],
   "runtimes": [
     {
@@ -184,7 +207,7 @@
         "local_endpoint": "Microsoft.Office.Addin",
         "allowed_host": ["workbook"]
       },
-      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging"],
+      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging", "GenerateDashboard"],
       "auth": {
         "type": "None"
       }
