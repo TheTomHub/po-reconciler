@@ -272,6 +272,7 @@
         <li><a href="#step5">Step 5: Review Results</a></li>
         <li><a href="#step6">Step 6: Take Action</a></li>
         <li><a href="#step7">Step 7: Generate ERP Staging</a></li>
+        <li><a href="#copilot">Using the Copilot Agent</a></li>
         <li><a href="#tips">Tips &amp; Troubleshooting</a></li>
       </ol>
     </div>
@@ -374,7 +375,7 @@
       <span class="pipeline-arrow">&rarr;</span>
       <span class="pipeline-step green">ERP Staging</span>
     </div>
-    <p>The task pane has two tabs: <b>Reconcile</b> (steps 1&ndash;4) and <b>Actions</b> (steps 5&ndash;7).</p>
+    <p>The task pane has three tabs: <b>Reconcile</b> (steps 1&ndash;4), <b>Actions</b> (steps 5&ndash;7), and <b>Tools</b> (price intelligence). With the Copilot agent, steps 2&ndash;3 can be automated via SharePoint &mdash; see <a href="#copilot">Using the Copilot Agent</a>.</p>
   </div>
 
   <!-- Step 1: Upload PO -->
@@ -606,6 +607,70 @@
         <li>Red rows need the SKU verified in ERP before entry</li>
       </ul>
     </div>
+  </div>
+
+  <!-- Copilot Agent -->
+  <div class="section" id="copilot">
+    <h2>Using the Copilot Agent</h2>
+    <p>If your organisation has Microsoft 365 Copilot, Chandlr works as a Copilot agent &mdash; you can do everything by typing natural language instead of clicking buttons.</p>
+
+    <div class="callout info">
+      <strong>Requirements</strong>
+      Microsoft 365 Copilot license (or pay-as-you-go billing enabled). The agent uses SharePoint to find price lists automatically.
+    </div>
+
+    <h3>Getting started</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open the Copilot panel in Excel</strong>
+        <p>Click the <b>Copilot</b> button in the ribbon (top-right). Look for <b>Chandlr</b> in the agent list.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Use the conversation starters or type freely</strong>
+        <p>Chandlr understands natural requests about PO processing. Try the examples below.</p>
+      </div>
+    </div>
+
+    <h3>What you can say</h3>
+    <table class="mini-table">
+      <tr><th style="width:40%">Prompt</th><th>What happens</th></tr>
+      <tr><td>"Extract the order data from this PO"</td><td>Reads the active sheet, auto-detects columns, creates a clean staging sheet</td></tr>
+      <tr><td>"Reconcile this PO using the latest price list from SharePoint"</td><td>Finds the most recent price list in your team's SharePoint, compares every line item</td></tr>
+      <tr><td>"Reconcile the PO against the ERP data I've selected"</td><td>Uses the data range you've selected in Excel as the price reference</td></tr>
+      <tr><td>"Generate a credit note"</td><td>Creates a credit note sheet for all PO lines at original prices</td></tr>
+      <tr><td>"Create an ERP-ready staging sheet"</td><td>Generates color-coded sheet: green (enter), yellow (review), red (hold)</td></tr>
+      <tr><td>"Draft an email about the pricing discrepancies"</td><td>Writes a professional exception email you can send to your team</td></tr>
+      <tr><td>"Show me price trends from my reconciliation history"</td><td>Analyses all past reconciliations and creates a Price Intelligence Dashboard</td></tr>
+    </table>
+
+    <h3>SharePoint integration</h3>
+    <p>Chandlr can access price lists and reference data stored in your team's SharePoint folders. This means:</p>
+    <ul>
+      <li><b>No manual copy-paste</b> &mdash; the agent finds the latest price list automatically</li>
+      <li><b>Always up-to-date</b> &mdash; if your team updates the price list daily, the agent uses today's version</li>
+      <li><b>Works with existing workflows</b> &mdash; no need to change where you store files</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>Tip: be specific about which price list</strong>
+      If your team has multiple price lists (e.g. by supplier or category), tell the agent: "Use the Tesco price list from the Pricing folder" to help it find the right one.
+    </div>
+
+    <h3>Copilot vs. task pane</h3>
+    <p>Both paths produce the same output sheets. Choose whichever fits your workflow:</p>
+    <table class="mini-table">
+      <tr><th>Feature</th><th>Task Pane (buttons)</th><th>Copilot Agent (chat)</th></tr>
+      <tr><td>Upload PO file</td><td>Click &amp; browse</td><td>"Extract the PO from this sheet"</td></tr>
+      <tr><td>Load ERP data</td><td>Select range &amp; click Load</td><td>Auto-fetches from SharePoint</td></tr>
+      <tr><td>Reconcile</td><td>Click Reconcile</td><td>"Reconcile this PO"</td></tr>
+      <tr><td>Actions</td><td>Click each button</td><td>"Generate credit note and staging sheet"</td></tr>
+      <tr><td>Price trends</td><td>Tools tab &rarr; Dashboard</td><td>"Show me price trends"</td></tr>
+      <tr><td>Requires Copilot license</td><td>No</td><td>Yes</td></tr>
+    </table>
   </div>
 
   <!-- Tips & Troubleshooting -->
