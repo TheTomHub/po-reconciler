@@ -12,6 +12,9 @@ import { writeStagingSheet } from "../capture/staging";
 import { validate, formatValidationReport } from "../validate/validator";
 import { generateStagingEntry } from "../entry/entry";
 import { writeEntrySheet } from "../entry/entry-results";
+import { toHistoryRecords, analyzeHistory, formatPredictReport } from "../predict/predict";
+import { appendHistory, readHistory, getHistorySummary } from "../predict/history";
+import { writeDashboard } from "../predict/dashboard";
 
 /* global Office, Excel */
 
@@ -104,6 +107,19 @@ function initUI(browserMode) {
     validationBadge: document.getElementById("validation-badge"),
     validationDetails: document.getElementById("validation-details"),
     validationReport: document.getElementById("validation-report"),
+    // Tools / Predict
+    dashboardBtn: document.getElementById("dashboard-btn"),
+    dashboardStatus: document.getElementById("dashboard-status"),
+    toolsHint: document.getElementById("tools-hint"),
+    historySummary: document.getElementById("history-summary"),
+    historyRecords: document.getElementById("history-records"),
+    historySkus: document.getElementById("history-skus"),
+    historyRuns: document.getElementById("history-runs"),
+    predictSummary: document.getElementById("predict-summary"),
+    predictDrift: document.getElementById("predict-drift"),
+    predictExceptionRate: document.getElementById("predict-exception-rate"),
+    predictAnomalies: document.getElementById("predict-anomalies"),
+    predictTrendingUp: document.getElementById("predict-trending-up"),
   };
 
   // Event listeners
@@ -124,6 +140,7 @@ function initUI(browserMode) {
   els.extractBtn.addEventListener("click", handleExtract);
   els.applyPoColumns.addEventListener("click", () => applyManualColumns("po"));
   els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
+  els.dashboardBtn.addEventListener("click", handleDashboard);
 
   // Tab switching
   els.tabBtns.forEach((btn) => {
@@ -132,6 +149,11 @@ function initUI(browserMode) {
       switchTab(btn.dataset.tab);
     });
   });
+
+  // Check for existing price history on load
+  if (!browserMode) {
+    refreshHistorySummary();
+  }
 }
 
 // --- Tab Switching ---
@@ -329,6 +351,18 @@ async function handleReconcile() {
       await writeResultsSheet(results, state.tolerance);
     }
 
+    // Append to price history (non-blocking — don't fail reconciliation if history write fails)
+    if (!state.browserMode) {
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        const historyRecords = toHistoryRecords(results, state.poFilename, today);
+        await appendHistory(historyRecords);
+        refreshHistorySummary();
+      } catch (histErr) {
+        console.warn("Could not append to price history:", histErr.message);
+      }
+    }
+
     setProgress(90, "Finalizing...");
 
     // Display summary
@@ -516,6 +550,58 @@ async function handleERPStaging() {
     showError(err.message);
   } finally {
     els.erpStagingBtn.disabled = false;
+  }
+}
+
+// --- Price Intelligence Dashboard ---
+
+async function refreshHistorySummary() {
+  try {
+    const summary = await getHistorySummary();
+    if (summary.hasHistory) {
+      els.toolsHint.textContent = `History from ${summary.firstDate} to ${summary.lastDate}`;
+      els.historySummary.hidden = false;
+      els.historyRecords.textContent = summary.recordCount;
+      els.historySkus.textContent = summary.skuCount;
+      els.historyRuns.textContent = summary.runs;
+      els.dashboardBtn.disabled = false;
+    }
+  } catch {
+    // Silently ignore — history not available yet
+  }
+}
+
+async function handleDashboard() {
+  hideError();
+  els.dashboardBtn.disabled = true;
+  setStatus(els.dashboardStatus, "Analyzing price history...", "");
+
+  try {
+    const records = await readHistory();
+    if (records.length === 0) {
+      setStatus(els.dashboardStatus, "No history yet — reconcile a PO first", "");
+      return;
+    }
+
+    const analysis = analyzeHistory(records);
+
+    // Write dashboard sheet
+    await writeDashboard(analysis);
+
+    // Show summary metrics in the Tools tab
+    const m = analysis.metrics;
+    els.predictSummary.hidden = false;
+    els.predictDrift.textContent = (m.avgDrift >= 0 ? "+" : "") + m.avgDrift.toFixed(2) + "%";
+    els.predictExceptionRate.textContent = m.exceptionRate.toFixed(1) + "%";
+    els.predictAnomalies.textContent = m.anomalyCount;
+    els.predictTrendingUp.textContent = m.trendingUp;
+
+    setStatus(els.dashboardStatus, "Dashboard created", "success");
+    setTimeout(() => setStatus(els.dashboardStatus, "", ""), 4000);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    els.dashboardBtn.disabled = false;
   }
 }
 

@@ -509,6 +509,38 @@ select {
   line-height: 1.6;
 }
 
+/* History summary */
+.history-summary {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.history-stats {
+  font-size: 13px;
+  color: #605e5c;
+}
+
+.history-stats span {
+  font-weight: 600;
+  color: #1f4e79;
+}
+
+/* Predict metrics grid */
+.predict-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#panel-tools h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f4e79;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
 /* Error section */
 #error-section {
   margin-top: 12px;

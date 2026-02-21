@@ -12,6 +12,9 @@ import { writeStagingSheet } from "../capture/staging";
 import { validate, formatValidationReport } from "../validate/validator";
 import { generateStagingEntry } from "../entry/entry";
 import { writeEntrySheet } from "../entry/entry-results";
+import { toHistoryRecords, analyzeHistory, formatPredictReport } from "../predict/predict";
+import { appendHistory, readHistory } from "../predict/history";
+import { writeDashboard } from "../predict/dashboard";
 
 /**
  * Shared state for agent actions within a session.
@@ -112,6 +115,15 @@ async function handleReconcilePO(message) {
 
   // Write results sheet
   await writeResultsSheet(results, tolerance);
+
+  // Append to price history
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const historyRecords = toHistoryRecords(results, agentState.poFilename, today);
+    await appendHistory(historyRecords);
+  } catch {
+    // Non-critical — don't fail the reconciliation
+  }
 
   // Format summary
   const s = results.summary;
@@ -304,6 +316,49 @@ async function handleGenerateERPStaging(message) {
   return response;
 }
 
+// ── GenerateDashboard ──
+
+async function handleGenerateDashboard() {
+  const records = await readHistory();
+
+  if (records.length === 0) {
+    return "No price history available yet. Run at least one reconciliation to start building history. Each reconciliation automatically saves price data for trend analysis.";
+  }
+
+  const analysis = analyzeHistory(records);
+  await writeDashboard(analysis);
+
+  const m = analysis.metrics;
+  let response = `Price Intelligence Dashboard created.\n\n`;
+  response += `Data: ${m.totalRecords} records across ${m.totalRuns} reconciliation runs, ${m.totalSKUs} unique SKUs.\n\n`;
+  response += `Key metrics:\n`;
+  response += `  Average price drift: ${m.avgDrift >= 0 ? "+" : ""}${m.avgDrift.toFixed(2)}%\n`;
+  response += `  Exception rate: ${m.exceptionRate.toFixed(1)}%\n`;
+  response += `  Anomalies detected: ${m.anomalyCount}\n\n`;
+  response += `Trend breakdown:\n`;
+  response += `  Trending up: ${m.trendingUp} SKUs\n`;
+  response += `  Trending down: ${m.trendingDown} SKUs\n`;
+  response += `  Stable: ${m.stable} SKUs\n`;
+
+  if (analysis.topMovers.length > 0) {
+    response += `\nTop movers (biggest recent price changes):\n`;
+    for (const mv of analysis.topMovers.slice(0, 5)) {
+      const sign = mv.lastChange >= 0 ? "+" : "";
+      response += `  ${mv.sku} ${mv.name}: ${sign}£${mv.lastChange.toFixed(2)} (${sign}${mv.lastChangePct.toFixed(1)}%)\n`;
+    }
+  }
+
+  if (analysis.watchList.length > 0) {
+    response += `\nWatch list (SKUs needing attention):\n`;
+    for (const w of analysis.watchList.slice(0, 5)) {
+      response += `  ${w.sku} ${w.name} — ${w.flags.join(", ")}\n`;
+    }
+  }
+
+  response += `\nThe Dashboard sheet has been activated with full details.`;
+  return response;
+}
+
 // ── Register agent actions ──
 
 Office.actions.associate("ExtractPOData", async (message) => {
@@ -349,6 +404,14 @@ Office.actions.associate("DraftExceptionEmail", async () => {
 Office.actions.associate("GenerateERPStaging", async (message) => {
   try {
     return await handleGenerateERPStaging(message);
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+});
+
+Office.actions.associate("GenerateDashboard", async () => {
+  try {
+    return await handleGenerateDashboard();
   } catch (err) {
     return `Error: ${err.message}`;
   }

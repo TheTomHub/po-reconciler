@@ -790,6 +790,154 @@ assert(email.body.length > 100, `Email body is substantial (${email.body.length}
 console.log(`\n  Subject: ${email.subject}`);
 console.log(`  Body preview: ${email.body.substring(0, 120)}...`);
 
+// ── Step 10: Predict — Price Intelligence ──
+
+console.log("\nStep 10: Price Intelligence (Predict module)");
+
+// Inline toHistoryRecords from src/predict/predict.js
+function toHistoryRecords(reconciliation, poRef, date) {
+  return reconciliation.rows
+    .filter((r) => r.poPrice != null && r.status !== "Not in PO")
+    .map((r) => ({
+      date,
+      poRef,
+      sku: r.sku,
+      name: r.name || "",
+      poPrice: r.poPrice,
+      erpPrice: r.erpPrice,
+      diff: r.diff,
+      status: r.status,
+      poQty: r.poQty || 0,
+    }));
+}
+
+// Inline analyzeHistory core (simplified from src/predict/predict.js)
+function avg(arr) { return arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+function stdDev(arr) {
+  if (arr.length < 2) return 0;
+  const mean = avg(arr);
+  const variance = arr.reduce((sum, v) => sum + (v - mean) ** 2, 0) / (arr.length - 1);
+  return Math.sqrt(variance);
+}
+
+function computeTrend(priceSeries) {
+  const n = priceSeries.length;
+  if (n < 2) return { direction: "insufficient", slope: 0, confidence: 0 };
+  const xs = priceSeries.map((_, i) => i);
+  const ys = priceSeries.map((p) => p.price);
+  const xMean = avg(xs);
+  const yMean = avg(ys);
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (xs[i] - xMean) * (ys[i] - yMean);
+    den += (xs[i] - xMean) ** 2;
+  }
+  const slope = den !== 0 ? num / den : 0;
+  const slopePct = yMean !== 0 ? (slope / yMean) * 100 : 0;
+  let direction = Math.abs(slopePct) < 0.5 ? "stable" : slope > 0 ? "up" : "down";
+  return { direction, slope: round(slope), slopePct: round(slopePct) };
+}
+
+function analyzeHistory(records) {
+  if (!records || records.length === 0) return null;
+  const bySku = new Map();
+  for (const r of records) {
+    const key = r.sku.trim().toUpperCase();
+    if (!bySku.has(key)) bySku.set(key, []);
+    bySku.get(key).push(r);
+  }
+  const skuAnalysis = new Map();
+  let trendingUp = 0, trendingDown = 0, stable = 0, insufficientData = 0, anomalyCount = 0;
+  for (const [sku, skuRecords] of bySku) {
+    const sorted = [...skuRecords].sort((a, b) => a.date.localeCompare(b.date));
+    const priceSeries = sorted.filter((r) => r.erpPrice != null).map((r) => ({ date: r.date, price: r.erpPrice }));
+    const trend = priceSeries.length >= 2 ? computeTrend(priceSeries) : { direction: "insufficient", slope: 0 };
+    const exceptionCount = sorted.filter((r) => r.status === "Exception").length;
+    const prices = priceSeries.map((p) => p.price);
+    let anomaly = false;
+    if (prices.length >= 3) {
+      const mean = avg(prices.slice(0, -1));
+      const sd = stdDev(prices.slice(0, -1));
+      if (sd > 0) anomaly = Math.abs((prices[prices.length - 1] - mean) / sd) > 2;
+    }
+    if (trend.direction === "up") trendingUp++;
+    else if (trend.direction === "down") trendingDown++;
+    else if (trend.direction === "stable") stable++;
+    else insufficientData++;
+    if (anomaly) anomalyCount++;
+    skuAnalysis.set(sku, { trend, exceptionCount, anomaly, dataPoints: priceSeries.length, name: sorted[0].name });
+  }
+  const exceptionRecords = records.filter((r) => r.status === "Exception").length;
+  const uniqueRuns = new Set(records.map((r) => r.poRef + "|" + r.date)).size;
+  return {
+    skuAnalysis,
+    metrics: {
+      totalSKUs: skuAnalysis.size,
+      totalRecords: records.length,
+      totalRuns: uniqueRuns,
+      exceptionRate: round((exceptionRecords / records.length) * 100),
+      anomalyCount,
+      trendingUp,
+      trendingDown,
+      stable,
+      insufficientData,
+    },
+  };
+}
+
+// Test with single reconciliation run
+const run1Records = toHistoryRecords(results, "PO-2025-0247", "2025-01-15");
+assert(run1Records.length >= 48, `History: ${run1Records.length} records from reconciliation (≥48)`);
+
+// Verify records have correct shape
+const firstRecord = run1Records[0];
+assert(firstRecord.date === "2025-01-15", `Record has correct date`);
+assert(firstRecord.poRef === "PO-2025-0247", `Record has correct PO ref`);
+assert(typeof firstRecord.sku === "string" && firstRecord.sku.length > 0, `Record has SKU`);
+assert(typeof firstRecord.poPrice === "number", `Record has numeric PO price`);
+
+// Single-run analysis (limited — most trends need 2+ runs)
+const analysis1 = analyzeHistory(run1Records);
+assert(analysis1 !== null, `Analysis produced results`);
+assert(analysis1.metrics.totalSKUs >= 40, `Tracked ${analysis1.metrics.totalSKUs} unique SKUs (≥40)`);
+assertEq(analysis1.metrics.totalRuns, 1, `Single reconciliation run detected`);
+assert(analysis1.metrics.insufficientData >= 30, `Most SKUs have insufficient data with 1 run (${analysis1.metrics.insufficientData})`);
+
+// Simulate 3 reconciliation runs with price drift
+const run2Records = run1Records.map((r) => ({
+  ...r,
+  date: "2025-02-15",
+  poRef: "PO-2025-0312",
+  erpPrice: r.erpPrice != null ? round(r.erpPrice * 1.02) : null, // 2% increase
+}));
+
+const run3Records = run1Records.map((r) => ({
+  ...r,
+  date: "2025-03-15",
+  poRef: "PO-2025-0398",
+  erpPrice: r.erpPrice != null ? round(r.erpPrice * 1.05) : null, // 5% increase from baseline
+}));
+
+const allRecords = [...run1Records, ...run2Records, ...run3Records];
+assert(allRecords.length >= 144, `3 runs: ${allRecords.length} total records (≥144)`);
+
+const analysis3 = analyzeHistory(allRecords);
+assertEq(analysis3.metrics.totalRuns, 3, `Three reconciliation runs detected`);
+assert(analysis3.metrics.trendingUp > 0, `Some SKUs trending up (got ${analysis3.metrics.trendingUp})`);
+assert(analysis3.metrics.exceptionRate > 0, `Exception rate > 0% (got ${analysis3.metrics.exceptionRate}%)`);
+
+// Check that a SKU with increasing prices has "up" trend
+const teaAnalysis = analysis3.skuAnalysis.get("1001V001");
+assert(teaAnalysis, `Tea (1001V001) has analysis data`);
+assertEq(teaAnalysis.trend.direction, "up", `Tea trend is "up" with 2%→5% price increase`);
+assert(teaAnalysis.dataPoints === 3, `Tea has 3 data points`);
+
+console.log(`\n  Run 1: ${run1Records.length} records`);
+console.log(`  Run 2: ${run2Records.length} records (+2% price drift)`);
+console.log(`  Run 3: ${run3Records.length} records (+5% price drift)`);
+console.log(`  Metrics: ${analysis3.metrics.trendingUp} up, ${analysis3.metrics.trendingDown} down, ${analysis3.metrics.stable} stable`);
+console.log(`  Exception rate: ${analysis3.metrics.exceptionRate}%`);
+
 // ── Results ──
 
 console.log("\n═══════════════════════════════════════════════════════");

@@ -78,6 +78,10 @@
             {
               "id": "GenerateERPStaging",
               "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateDashboard",
+              "type": "executeDataFunction"
             }
           ]
         },

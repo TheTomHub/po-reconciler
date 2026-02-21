@@ -15,6 +15,7 @@
     <nav class="tab-bar">
       <button class="tab active" data-tab="reconcile">Reconcile</button>
       <button class="tab" data-tab="actions" disabled title="Run reconciliation first">Actions</button>
+      <button class="tab" data-tab="tools">Tools</button>
     </nav>
 
     <main>
@@ -194,6 +195,43 @@
             </div>
             <span class="status" id="email-status"></span>
           </section>
+        </div>
+      </div>
+
+      <!-- Tab: Tools -->
+      <div class="tab-panel" id="panel-tools">
+        <h2>Price Intelligence</h2>
+        <p class="tab-hint" id="tools-hint">History builds automatically as you reconcile POs.</p>
+        <div id="history-summary" class="history-summary" hidden>
+          <div class="history-stats">
+            <span id="history-records">0</span> records &middot;
+            <span id="history-skus">0</span> SKUs &middot;
+            <span id="history-runs">0</span> runs
+          </div>
+        </div>
+        <div class="action-section">
+          <button id="dashboard-btn" class="btn btn-primary" disabled>Generate Dashboard</button>
+          <span class="status" id="dashboard-status"></span>
+        </div>
+        <div id="predict-summary" hidden>
+          <div class="predict-metrics">
+            <div class="result-card">
+              <span class="result-label">Avg Price Drift</span>
+              <span class="result-value" id="predict-drift">—</span>
+            </div>
+            <div class="result-card">
+              <span class="result-label">Exception Rate</span>
+              <span class="result-value" id="predict-exception-rate">—</span>
+            </div>
+            <div class="result-card warning">
+              <span class="result-label">Anomalies</span>
+              <span class="result-value" id="predict-anomalies">—</span>
+            </div>
+            <div class="result-card">
+              <span class="result-label">Trending Up</span>
+              <span class="result-value" id="predict-trending-up">—</span>
+            </div>
+          </div>
         </div>
       </div>
 
