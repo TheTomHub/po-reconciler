@@ -107,6 +107,16 @@ function initUI(browserMode) {
     validationBadge: document.getElementById("validation-badge"),
     validationDetails: document.getElementById("validation-details"),
     validationReport: document.getElementById("validation-report"),
+    // Contextual next steps
+    nextSteps: document.getElementById("next-steps"),
+    nextStepsList: document.getElementById("next-steps-list"),
+    // Workflow steps in Actions tab
+    wfCredit: document.getElementById("wf-credit"),
+    wfReinvoice: document.getElementById("wf-reinvoice"),
+    wfStaging: document.getElementById("wf-staging"),
+    wfStagingNum: document.getElementById("wf-staging-num"),
+    wfEmail: document.getElementById("wf-email"),
+    wfEmailNum: document.getElementById("wf-email-num"),
     // Tools / Predict
     dashboardBtn: document.getElementById("dashboard-btn"),
     dashboardStatus: document.getElementById("dashboard-status"),
@@ -391,6 +401,10 @@ async function handleReconcile() {
     // Clear any previous action status
     setStatus(els.actionStatus, "", "");
 
+    // Show contextual next steps and update workflow
+    showNextSteps("reconciled");
+    updateWorkflowSteps();
+
     setTimeout(() => {
       els.progressSection.hidden = true;
     }, 1000);
@@ -474,6 +488,7 @@ function handleShowEmail() {
   els.emailDraft.textContent = draft.body;
   els.mailtoLink.href = buildMailtoLink(draft);
   els.emailSection.hidden = false;
+  markWorkflowDone("wf-email");
 }
 
 async function handleCopyEmail() {
@@ -504,6 +519,7 @@ async function handleCreditNote() {
     setStatus(els.actionStatus, "Generating...", "");
     const creditData = generateCreditNote(state.results);
     await writeCreditNoteSheet(creditData, state.poFilename);
+    markWorkflowDone("wf-credit");
     setStatus(els.actionStatus, "Credit Note sheet created", "success");
     setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
   } catch (err) {
@@ -520,6 +536,7 @@ async function handleReInvoice() {
     setStatus(els.actionStatus, "Generating...", "");
     const invoiceData = generateCorrectedInvoice(state.results);
     await writeReInvoiceSheet(invoiceData, state.poFilename, state.results.summary.exceptions);
+    markWorkflowDone("wf-reinvoice");
     setStatus(els.actionStatus, "Re-Invoice sheet created", "success");
     setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
   } catch (err) {
@@ -544,6 +561,7 @@ async function handleERPStaging() {
       await writeEntrySheet(entryData);
     }
     const t = entryData.totals;
+    markWorkflowDone("wf-staging");
     setStatus(els.actionStatus, `ERP staging: ${t.readyCount} ready, ${t.reviewCount} review, ${t.holdCount} hold`, "success");
     setTimeout(() => setStatus(els.actionStatus, "", ""), 4000);
   } catch (err) {
@@ -640,6 +658,60 @@ function renderBrowserResultsTable(results) {
   html += "</tbody>";
   table.innerHTML = html;
   els.browserResultsTable.hidden = false;
+}
+
+// --- Contextual Next Steps ---
+
+function showNextSteps(context) {
+  const list = els.nextStepsList;
+  list.innerHTML = "";
+  const steps = [];
+
+  if (context === "reconciled") {
+    const hasExceptions = state.results && state.results.summary.exceptions > 0;
+    if (hasExceptions) {
+      steps.push({ label: "Generate Credit Note & Re-Invoice", detail: `${state.results.summary.exceptions} exceptions found`, action: () => { switchTab("actions"); } });
+    }
+    steps.push({ label: "Create ERP Staging Sheet", detail: "Ready for ERP entry", action: () => { switchTab("actions"); } });
+    steps.push({ label: "View Price Trends", detail: "History updated", action: () => { switchTab("tools"); } });
+  }
+
+  if (steps.length === 0) {
+    els.nextSteps.hidden = true;
+    return;
+  }
+
+  steps.forEach((s) => {
+    const btn = document.createElement("button");
+    btn.className = "next-step-btn";
+    btn.innerHTML = `<span class="ns-arrow">&rsaquo;</span><span class="ns-label">${s.label}</span><span class="ns-detail">${s.detail}</span>`;
+    btn.addEventListener("click", s.action);
+    list.appendChild(btn);
+  });
+  els.nextSteps.hidden = false;
+}
+
+function updateWorkflowSteps() {
+  if (!state.results) return;
+  const hasExceptions = state.results.summary.exceptions > 0;
+
+  // Show/hide credit note and re-invoice steps
+  els.wfCredit.hidden = !hasExceptions;
+  els.wfReinvoice.hidden = !hasExceptions;
+
+  // Renumber staging and email steps
+  if (hasExceptions) {
+    els.wfStagingNum.textContent = "3";
+    els.wfEmailNum.textContent = "4";
+  } else {
+    els.wfStagingNum.textContent = "1";
+    els.wfEmailNum.textContent = "2";
+  }
+}
+
+function markWorkflowDone(stepId) {
+  const step = document.getElementById(stepId);
+  if (step) step.classList.add("done");
 }
 
 // --- UI Helpers ---

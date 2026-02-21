@@ -541,6 +541,126 @@ select {
   text-align: center;
 }
 
+/* Contextual next steps */
+.next-steps {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f0f6fb;
+  border: 1px solid #c7dff0;
+  border-radius: 4px;
+}
+
+.next-steps-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #1f4e79;
+  margin-bottom: 6px;
+}
+
+.next-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.next-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c7dff0;
+  border-radius: 4px;
+  background: #fff;
+  color: #323130;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.next-step-btn:hover {
+  background: #e8f0f8;
+  border-color: #1f4e79;
+}
+
+.next-step-btn .ns-arrow {
+  color: #1f4e79;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.next-step-btn .ns-label {
+  flex: 1;
+}
+
+.next-step-btn .ns-detail {
+  font-size: 11px;
+  color: #605e5c;
+}
+
+/* Workflow steps in Actions tab */
+.workflow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.workflow-step {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+}
+
+.workflow-step.done {
+  opacity: 0.6;
+  border-left: 3px solid #107c10;
+}
+
+.workflow-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1f4e79;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.workflow-step.done .workflow-num {
+  background: #107c10;
+}
+
+.workflow-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #323130;
+  margin-bottom: 2px;
+}
+
+.workflow-desc {
+  font-size: 11px;
+  color: #605e5c;
+  margin-bottom: 6px;
+}
+
 /* Error section */
 #error-section {
   margin-top: 12px;

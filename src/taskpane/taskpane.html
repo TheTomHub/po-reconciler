@@ -162,6 +162,11 @@
               <span class="result-value" id="result-exposure">—</span>
             </div>
           </div>
+          <!-- Contextual next steps -->
+          <div id="next-steps" class="next-steps" hidden>
+            <p class="next-steps-label">Next steps</p>
+            <div id="next-steps-list" class="next-steps-list"></div>
+          </div>
         </section>
 
         <!-- Browser preview: results table -->
@@ -178,11 +183,40 @@
         <h2>Post-Reconciliation Actions</h2>
         <p class="tab-hint" id="actions-hint">Run reconciliation first to unlock actions.</p>
         <div id="actions-content" hidden>
-          <div class="action-section">
-            <button id="email-btn" class="btn btn-secondary">Draft Exception Email</button>
-            <button id="credit-note-btn" class="btn btn-secondary" hidden>Generate Credit Note</button>
-            <button id="reinvoice-btn" class="btn btn-secondary" hidden>Generate Re-Invoice</button>
-            <button id="erp-staging-btn" class="btn btn-secondary">Generate ERP Staging</button>
+          <!-- Suggested workflow -->
+          <div id="actions-workflow" class="workflow-steps">
+            <div class="workflow-step" id="wf-credit" hidden>
+              <span class="workflow-num">1</span>
+              <div class="workflow-body">
+                <p class="workflow-title">Credit the original invoice</p>
+                <p class="workflow-desc">Full credit at PO prices — company policy</p>
+                <button id="credit-note-btn" class="btn btn-secondary">Generate Credit Note</button>
+              </div>
+            </div>
+            <div class="workflow-step" id="wf-reinvoice" hidden>
+              <span class="workflow-num">2</span>
+              <div class="workflow-body">
+                <p class="workflow-title">Re-invoice at correct prices</p>
+                <p class="workflow-desc">New invoice using ERP prices</p>
+                <button id="reinvoice-btn" class="btn btn-secondary">Generate Re-Invoice</button>
+              </div>
+            </div>
+            <div class="workflow-step" id="wf-staging">
+              <span class="workflow-num" id="wf-staging-num">1</span>
+              <div class="workflow-body">
+                <p class="workflow-title">Create ERP staging sheet</p>
+                <p class="workflow-desc">Color-coded: green = enter, yellow = review, red = hold</p>
+                <button id="erp-staging-btn" class="btn btn-secondary">Generate ERP Staging</button>
+              </div>
+            </div>
+            <div class="workflow-step" id="wf-email">
+              <span class="workflow-num" id="wf-email-num">2</span>
+              <div class="workflow-body">
+                <p class="workflow-title">Notify the team</p>
+                <p class="workflow-desc">Email summary of exceptions to MDC</p>
+                <button id="email-btn" class="btn btn-secondary">Draft Exception Email</button>
+              </div>
+            </div>
           </div>
           <span class="status" id="action-status"></span>
           <!-- Email Draft -->
