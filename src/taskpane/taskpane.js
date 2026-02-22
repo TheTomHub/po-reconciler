@@ -361,15 +361,18 @@ async function handleReconcile() {
       await writeResultsSheet(results, state.tolerance);
     }
 
-    // Append to price history (non-blocking — don't fail reconciliation if history write fails)
+    // Append to price history
     if (!state.browserMode) {
       try {
         const today = new Date().toISOString().slice(0, 10);
         const historyRecords = toHistoryRecords(results, state.poFilename, today);
-        await appendHistory(historyRecords);
-        refreshHistorySummary();
+        if (historyRecords.length > 0) {
+          await appendHistory(historyRecords);
+          await refreshHistorySummary();
+        }
       } catch (histErr) {
-        console.warn("Could not append to price history:", histErr.message);
+        console.error("Price history append failed:", histErr);
+        setStatus(els.dashboardStatus, "History save failed: " + histErr.message, "error");
       }
     }
 

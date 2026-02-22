@@ -1,13 +1,13 @@
 /**
  * Credit note and corrected re-invoice generators.
  *
- * Company policy: when a PO has price exceptions, credit ALL lines
- * (not just exceptions), then re-invoice with corrected prices.
+ * Credit notes and re-invoices only cover exception lines —
+ * lines where the PO price doesn't match the ERP price.
  */
 
 /**
  * Generate credit note data from reconciliation results.
- * Credits ALL PO lines at their original PO prices (negative amounts).
+ * Credits only EXCEPTION lines at their original PO prices (negative amounts).
  *
  * @param {object} results - { summary, rows } from reconcile()
  * @returns {{ creditRows: object[], totals: { lineCount: number, totalCredit: number } }}
@@ -17,8 +17,8 @@ export function generateCreditNote(results) {
   let totalCredit = 0;
 
   for (const row of results.rows) {
-    // Skip rows that aren't actual PO lines (ERP-only rows)
-    if (row.status === "Not in PO") continue;
+    // Only credit lines with price exceptions
+    if (row.status !== "Exception" && row.status !== "Tolerance") continue;
     // Skip rows with no usable price
     if (row.poPrice == null) continue;
 
@@ -31,6 +31,8 @@ export function generateCreditNote(results) {
       name: row.name || "",
       qty,
       originalPrice: row.poPrice,
+      erpPrice: row.erpPrice,
+      diff: row.diff,
       lineTotal,
       creditAmount,
     });
@@ -49,8 +51,7 @@ export function generateCreditNote(results) {
 
 /**
  * Generate corrected re-invoice data from reconciliation results.
- * Uses ERP (correct) prices for all lines. Falls back to PO price
- * when ERP price is unavailable.
+ * Only includes exception lines, re-invoiced at correct ERP prices.
  *
  * @param {object} results - { summary, rows } from reconcile()
  * @returns {{ invoiceRows: object[], totals: { lineCount: number, totalInvoice: number } }}
@@ -60,21 +61,22 @@ export function generateCorrectedInvoice(results) {
   let totalInvoice = 0;
 
   for (const row of results.rows) {
-    if (row.status === "Not in PO") continue;
-    if (row.poPrice == null && row.erpPrice == null) continue;
+    // Only re-invoice lines with price exceptions
+    if (row.status !== "Exception" && row.status !== "Tolerance") continue;
+    if (row.erpPrice == null) continue;
 
     const qty = row.poQty || 1;
-    const correctedPrice = row.erpPrice != null ? row.erpPrice : row.poPrice;
+    const correctedPrice = row.erpPrice;
     const lineTotal = round(correctedPrice * qty);
-    const priceChanged = row.erpPrice != null && row.poPrice != null && row.erpPrice !== row.poPrice;
 
     invoiceRows.push({
       sku: row.sku,
       name: row.name || "",
       qty,
+      originalPrice: row.poPrice,
       correctedPrice,
       lineTotal,
-      priceChanged,
+      diff: row.diff,
     });
 
     totalInvoice = round(totalInvoice + lineTotal);

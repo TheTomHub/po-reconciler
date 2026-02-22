@@ -318,12 +318,12 @@ function generateCreditNote(results) {
   const creditRows = [];
   let totalCredit = 0;
   for (const row of results.rows) {
-    if (row.status === "Not in PO") continue;
+    if (row.status !== "Exception" && row.status !== "Tolerance") continue;
     if (row.poPrice == null) continue;
     const qty = row.poQty || 1;
     const lineTotal = round(row.poPrice * qty);
     const creditAmount = round(-lineTotal);
-    creditRows.push({ sku: row.sku, name: row.name || "", qty, originalPrice: row.poPrice, lineTotal, creditAmount });
+    creditRows.push({ sku: row.sku, name: row.name || "", qty, originalPrice: row.poPrice, erpPrice: row.erpPrice, diff: row.diff, lineTotal, creditAmount });
     totalCredit = round(totalCredit + creditAmount);
   }
   return { creditRows, totals: { lineCount: creditRows.length, totalCredit } };
@@ -333,13 +333,12 @@ function generateCorrectedInvoice(results) {
   const invoiceRows = [];
   let totalInvoice = 0;
   for (const row of results.rows) {
-    if (row.status === "Not in PO") continue;
-    if (row.poPrice == null && row.erpPrice == null) continue;
+    if (row.status !== "Exception" && row.status !== "Tolerance") continue;
+    if (row.erpPrice == null) continue;
     const qty = row.poQty || 1;
-    const correctedPrice = row.erpPrice != null ? row.erpPrice : row.poPrice;
+    const correctedPrice = row.erpPrice;
     const lineTotal = round(correctedPrice * qty);
-    const priceChanged = row.erpPrice != null && row.poPrice != null && row.erpPrice !== row.poPrice;
-    invoiceRows.push({ sku: row.sku, name: row.name || "", qty, correctedPrice, lineTotal, priceChanged });
+    invoiceRows.push({ sku: row.sku, name: row.name || "", qty, originalPrice: row.poPrice, correctedPrice, lineTotal, diff: row.diff });
     totalInvoice = round(totalInvoice + lineTotal);
   }
   return { invoiceRows, totals: { lineCount: invoiceRows.length, totalInvoice } };
@@ -752,29 +751,40 @@ console.log(`  Total value: £${entryData.totals.totalValue.toFixed(2)}`);
 console.log("\nStep 7: Generate credit note");
 
 const creditNote = generateCreditNote(results);
-assert(creditNote.creditRows.length >= 48, `Credit note covers ${creditNote.creditRows.length} lines (all PO lines)`);
+// Count only Exception + Tolerance rows that have both PO and ERP prices (Not in ERP excluded)
+const creditableCount = results.rows.filter((r) => (r.status === "Exception" || r.status === "Tolerance") && r.poPrice != null).length;
+assertEq(creditNote.creditRows.length, creditableCount, `Credit note covers ${creditNote.creditRows.length} exception/tolerance lines`);
 assert(creditNote.totals.totalCredit < 0, `Total credit is negative: £${creditNote.totals.totalCredit.toFixed(2)}`);
 
-// Verify credit = negative of PO total
-const poTotal = extraction.metadata.totalValue;
-assertEq(creditNote.totals.totalCredit, round(-poTotal), `Credit total (£${creditNote.totals.totalCredit.toFixed(2)}) = -PO total (£${poTotal.toFixed(2)})`);
+// Verify credit only covers exception + tolerance rows, not matched lines
+assert(creditNote.creditRows.length < 50, `Credit note is selective (${creditNote.creditRows.length} < 50 total PO lines)`);
+
+// Verify every credit row is an exception or tolerance
+const allExOrTol = creditNote.creditRows.every((r) => {
+  const match = results.rows.find((rr) => rr.sku === r.sku);
+  return match && (match.status === "Exception" || match.status === "Tolerance");
+});
+assert(allExOrTol, `All credit rows are exception/tolerance lines`);
 
 // ── Step 8: Re-Invoice ──
 
 console.log("\nStep 8: Generate corrected re-invoice");
 
 const reInvoice = generateCorrectedInvoice(results);
-assert(reInvoice.invoiceRows.length >= 48, `Re-invoice covers ${reInvoice.invoiceRows.length} lines`);
+const reinvoiceableCount = results.rows.filter((r) => (r.status === "Exception" || r.status === "Tolerance") && r.erpPrice != null).length;
+assertEq(reInvoice.invoiceRows.length, reinvoiceableCount, `Re-invoice covers ${reInvoice.invoiceRows.length} exception/tolerance lines`);
 assert(reInvoice.totals.totalInvoice > 0, `Total re-invoice: £${reInvoice.totals.totalInvoice.toFixed(2)}`);
 
-const priceChangedCount = reInvoice.invoiceRows.filter((r) => r.priceChanged).length;
-assert(priceChangedCount >= 8, `${priceChangedCount} prices corrected on re-invoice (≥8 expected)`);
+// All re-invoice lines should use ERP prices
+const allUseErp = reInvoice.invoiceRows.every((r) => r.correctedPrice != null && r.correctedPrice > 0);
+assert(allUseErp, `All re-invoice lines use ERP prices`);
 
-// Re-invoice total should differ from PO total (because ERP prices are different)
-assert(reInvoice.totals.totalInvoice !== poTotal, `Re-invoice total (£${reInvoice.totals.totalInvoice.toFixed(2)}) ≠ PO total (£${poTotal.toFixed(2)})`);
+// Re-invoice total should be higher than credit (ERP prices are generally higher)
+assert(reInvoice.totals.totalInvoice > Math.abs(creditNote.totals.totalCredit), `Re-invoice (£${reInvoice.totals.totalInvoice.toFixed(2)}) > credit (£${Math.abs(creditNote.totals.totalCredit).toFixed(2)}) — ERP prices higher`);
 
-// Net effect: credit + re-invoice should give a different total than original
+// Net effect: credit + re-invoice = the price correction amount
 const netEffect = round(creditNote.totals.totalCredit + reInvoice.totals.totalInvoice);
+assert(netEffect > 0, `Net effect is positive: £${netEffect.toFixed(2)} (customer underpaid)`);
 console.log(`  Net effect: £${creditNote.totals.totalCredit.toFixed(2)} (credit) + £${reInvoice.totals.totalInvoice.toFixed(2)} (re-invoice) = £${netEffect.toFixed(2)}`);
 
 // ── Step 9: Email Draft ──

@@ -55,9 +55,9 @@ export async function writeCreditNoteSheet(creditData, poFilename) {
 
     // --- Table Section (row 7+) ---
     const tableStartRow = 7;
-    const headers = ["SKU", "Product Name", "Qty", "Original Price", "Line Total", "Credit Amount"];
+    const headers = ["SKU", "Product Name", "Qty", "PO Price", "ERP Price", "Diff", "Line Total", "Credit Amount"];
 
-    const headerRange = sheet.getRange(`A${tableStartRow}:F${tableStartRow}`);
+    const headerRange = sheet.getRange(`A${tableStartRow}:H${tableStartRow}`);
     headerRange.values = [headers];
     headerRange.format.font.bold = true;
     headerRange.format.font.color = HEADER_FG;
@@ -72,40 +72,42 @@ export async function writeCreditNoteSheet(creditData, poFilename) {
         row.name,
         row.qty,
         row.originalPrice,
+        row.erpPrice != null ? row.erpPrice : "",
+        row.diff != null ? row.diff : "",
         row.lineTotal,
         row.creditAmount,
       ]);
 
       const dataStartRow = tableStartRow + 1;
       const dataEndRow = dataStartRow + dataValues.length - 1;
-      const dataRange = sheet.getRange(`A${dataStartRow}:F${dataEndRow}`);
+      const dataRange = sheet.getRange(`A${dataStartRow}:H${dataEndRow}`);
       dataRange.values = dataValues;
 
-      // Currency format for price columns (D, E, F)
-      for (const col of ["D", "E", "F"]) {
+      // Currency format for price columns (D, E, F, G, H)
+      for (const col of ["D", "E", "F", "G", "H"]) {
         const priceRange = sheet.getRange(`${col}${dataStartRow}:${col}${dataEndRow}`);
         priceRange.numberFormat = [[getCurrencyFormat()]];
       }
 
-      // Red font for credit amount column (F)
-      const creditCol = sheet.getRange(`F${dataStartRow}:F${dataEndRow}`);
+      // Red font for credit amount column (H)
+      const creditCol = sheet.getRange(`H${dataStartRow}:H${dataEndRow}`);
       creditCol.format.font.color = CREDIT_FG;
 
       // Footer row: total credit
       const footerRow = dataEndRow + 1;
-      const footerRange = sheet.getRange(`A${footerRow}:F${footerRow}`);
-      footerRange.values = [["", "", "", "", "Total Credit:", totals.totalCredit]];
+      const footerRange = sheet.getRange(`A${footerRow}:H${footerRow}`);
+      footerRange.values = [["", "", "", "", "", "", "Total Credit:", totals.totalCredit]];
       footerRange.format.font.bold = true;
 
-      const footerPriceCell = sheet.getRange(`F${footerRow}`);
+      const footerPriceCell = sheet.getRange(`H${footerRow}`);
       footerPriceCell.numberFormat = [[getCurrencyFormat()]];
       footerPriceCell.format.font.color = CREDIT_FG;
 
       // Auto-fit columns
-      const fullRange = sheet.getRange(`A1:F${footerRow}`);
+      const fullRange = sheet.getRange(`A1:H${footerRow}`);
       fullRange.format.autofitColumns();
     } else {
-      const fullRange = sheet.getRange(`A1:F${tableStartRow}`);
+      const fullRange = sheet.getRange(`A1:H${tableStartRow}`);
       fullRange.format.autofitColumns();
     }
 
@@ -154,9 +156,9 @@ export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCoun
 
     // --- Table Section (row 7+) ---
     const tableStartRow = 7;
-    const headers = ["SKU", "Product Name", "Qty", "Corrected Price", "Line Total"];
+    const headers = ["SKU", "Product Name", "Qty", "Original Price", "Corrected Price", "Diff", "Line Total"];
 
-    const headerRange = sheet.getRange(`A${tableStartRow}:E${tableStartRow}`);
+    const headerRange = sheet.getRange(`A${tableStartRow}:G${tableStartRow}`);
     headerRange.values = [headers];
     headerRange.format.font.bold = true;
     headerRange.format.font.color = HEADER_FG;
@@ -169,42 +171,36 @@ export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCoun
         row.sku,
         row.name,
         row.qty,
+        row.originalPrice != null ? row.originalPrice : "",
         row.correctedPrice,
+        row.diff != null ? row.diff : "",
         row.lineTotal,
       ]);
 
       const dataStartRow = tableStartRow + 1;
       const dataEndRow = dataStartRow + dataValues.length - 1;
-      const dataRange = sheet.getRange(`A${dataStartRow}:E${dataEndRow}`);
+      const dataRange = sheet.getRange(`A${dataStartRow}:G${dataEndRow}`);
       dataRange.values = dataValues;
 
-      // Currency format for price columns (D, E)
-      for (const col of ["D", "E"]) {
+      // Currency format for price columns (D, E, F, G)
+      for (const col of ["D", "E", "F", "G"]) {
         const priceRange = sheet.getRange(`${col}${dataStartRow}:${col}${dataEndRow}`);
         priceRange.numberFormat = [[getCurrencyFormat()]];
       }
 
-      // Yellow highlight on rows where price changed
-      for (let i = 0; i < invoiceRows.length; i++) {
-        if (invoiceRows[i].priceChanged) {
-          const rowRange = sheet.getRange(`A${dataStartRow + i}:E${dataStartRow + i}`);
-          rowRange.format.fill.color = CHANGED_BG;
-        }
-      }
-
       // Footer row: total invoice
       const footerRow = dataEndRow + 1;
-      const footerRange = sheet.getRange(`A${footerRow}:E${footerRow}`);
-      footerRange.values = [["", "", "", "Total Invoice:", totals.totalInvoice]];
+      const footerRange = sheet.getRange(`A${footerRow}:G${footerRow}`);
+      footerRange.values = [["", "", "", "", "", "Total Invoice:", totals.totalInvoice]];
       footerRange.format.font.bold = true;
 
-      const footerPriceCell = sheet.getRange(`E${footerRow}`);
+      const footerPriceCell = sheet.getRange(`G${footerRow}`);
       footerPriceCell.numberFormat = [[getCurrencyFormat()]];
 
-      const fullRange = sheet.getRange(`A1:E${footerRow}`);
+      const fullRange = sheet.getRange(`A1:G${footerRow}`);
       fullRange.format.autofitColumns();
     } else {
-      const fullRange = sheet.getRange(`A1:E${tableStartRow}`);
+      const fullRange = sheet.getRange(`A1:G${tableStartRow}`);
       fullRange.format.autofitColumns();
     }
 
