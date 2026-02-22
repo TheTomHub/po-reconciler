@@ -948,6 +948,76 @@ console.log(`  Run 3: ${run3Records.length} records (+5% price drift)`);
 console.log(`  Metrics: ${analysis3.metrics.trendingUp} up, ${analysis3.metrics.trendingDown} down, ${analysis3.metrics.stable} stable`);
 console.log(`  Exception rate: ${analysis3.metrics.exceptionRate}%`);
 
+// ── Step 11: Conversational Intelligence ──
+
+console.log("\nStep 11: Conversational Intelligence (AI moat)");
+
+// 11a: SKU Lookup — find records for a specific SKU
+function lookupSKU(records, query) {
+  const norm = query.trim().toUpperCase();
+  return records.filter((r) => {
+    const s = r.sku.trim().toUpperCase();
+    return s === norm || s.startsWith(norm) || norm.startsWith(s);
+  });
+}
+
+const teaRecords = lookupSKU(allRecords, "1001V001");
+assertEq(teaRecords.length, 3, `SKU lookup: 1001V001 has 3 records across 3 runs`);
+
+// Partial match: "1001" should find 1001V001
+const partialRecords = lookupSKU(allRecords, "1001");
+assert(partialRecords.length >= 3, `SKU lookup: partial "1001" finds ${partialRecords.length} records (≥3)`);
+
+// Unknown SKU returns nothing
+const unknownRecords = lookupSKU(allRecords, "ZZZZ999");
+assertEq(unknownRecords.length, 0, `SKU lookup: unknown SKU returns empty`);
+
+// 11b: PO Risk Assessment logic
+function assessPORisk(results, historicalExceptionRate) {
+  const s = results.summary;
+  const exceptionPct = s.total > 0 ? (s.exceptions / s.total) * 100 : 0;
+  const hasHighExposure = s.exposure > 100;
+  const notInErp = results.rows.filter((r) => r.status === "Not in ERP");
+
+  if (exceptionPct === 0 && notInErp.length === 0) return "ACCEPT";
+  if (exceptionPct <= 10 && s.exposure < 50 && notInErp.length === 0) return "ACCEPT_WITH_REVIEW";
+  if (exceptionPct <= 30 && !hasHighExposure) return "REVIEW";
+  return "ESCALATE";
+}
+
+const riskLevel = assessPORisk(results, 0);
+// Our test PO has ~22% exceptions (11/50) and moderate exposure — should be REVIEW
+assert(riskLevel === "REVIEW" || riskLevel === "ACCEPT_WITH_REVIEW", `PO risk assessment: ${riskLevel} (expected REVIEW or ACCEPT_WITH_REVIEW)`);
+
+// Simulate a clean PO (all matches)
+const cleanResults = { summary: { total: 50, matches: 50, tolerances: 0, exceptions: 0, exposure: 0, warnings: 0 }, rows: [] };
+assertEq(assessPORisk(cleanResults, 0), "ACCEPT", `Clean PO → ACCEPT`);
+
+// Simulate a bad PO (high exceptions)
+const badResults = {
+  summary: { total: 50, matches: 10, tolerances: 0, exceptions: 35, exposure: 500, warnings: 5 },
+  rows: [{ status: "Not in ERP", sku: "X" }, { status: "Not in ERP", sku: "Y" }],
+};
+assertEq(assessPORisk(badResults, 0), "ESCALATE", `High-exception PO → ESCALATE`);
+
+// Simulate minor exceptions PO
+const minorResults = {
+  summary: { total: 100, matches: 95, tolerances: 2, exceptions: 3, exposure: 15, warnings: 0 },
+  rows: [],
+};
+assertEq(assessPORisk(minorResults, 0), "ACCEPT_WITH_REVIEW", `Minor-exception PO → ACCEPT_WITH_REVIEW`);
+
+// 11c: Verify SKU history across runs shows price drift
+const teaSorted = teaRecords.sort((a, b) => a.date.localeCompare(b.date));
+const teaFirstErp = teaSorted[0].erpPrice;
+const teaLastErp = teaSorted[teaSorted.length - 1].erpPrice;
+assert(teaLastErp > teaFirstErp, `Tea ERP price drifted up: £${teaFirstErp.toFixed(2)} → £${teaLastErp.toFixed(2)}`);
+const teaDriftPct = round(((teaLastErp - teaFirstErp) / teaFirstErp) * 100);
+assert(teaDriftPct >= 4 && teaDriftPct <= 6, `Tea drift ~5% (got ${teaDriftPct}%)`);
+
+console.log(`  SKU lookup test: 1001V001 = ${teaRecords.length} records, drift = +${teaDriftPct}%`);
+console.log(`  Risk levels: clean=ACCEPT, minor=ACCEPT_WITH_REVIEW, current=REVIEW, bad=ESCALATE`);
+
 // ── Results ──
 
 console.log("\n═══════════════════════════════════════════════════════");

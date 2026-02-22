@@ -359,6 +359,260 @@ async function handleGenerateDashboard() {
   return response;
 }
 
+// ── GetPriceIntelligence ──
+// Returns a text-based intelligence report for conversational analysis.
+// The agent can discuss trends, anomalies, and risks without writing a sheet.
+
+async function handleGetPriceIntelligence() {
+  const records = await readHistory();
+
+  if (records.length === 0) {
+    return "No price history available yet. Run at least one reconciliation to start building history.";
+  }
+
+  const analysis = analyzeHistory(records);
+  return formatPredictReport(analysis);
+}
+
+// ── LookupSKU ──
+// Looks up a specific SKU's complete price history, trend, and risk flags.
+
+async function handleLookupSKU(message) {
+  const params = message ? JSON.parse(message) : {};
+  const query = (params.sku || "").trim().toUpperCase();
+
+  if (!query) {
+    return "Please provide a SKU to look up.";
+  }
+
+  const records = await readHistory();
+  if (records.length === 0) {
+    return "No price history available yet. Run at least one reconciliation first.";
+  }
+
+  // Find matching records (exact or partial match)
+  const matches = records.filter((r) => {
+    const norm = r.sku.trim().toUpperCase();
+    return norm === query || norm.startsWith(query) || query.startsWith(norm);
+  });
+
+  if (matches.length === 0) {
+    return `SKU "${query}" not found in price history. Available SKUs can be seen in the Dashboard.`;
+  }
+
+  // Sort by date ascending
+  const sorted = [...matches].sort((a, b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  const name = latest.name || sorted.find((r) => r.name)?.name || "";
+
+  // Build price timeline
+  const lines = [];
+  lines.push(`SKU LOOKUP: ${query}`);
+  if (name) lines.push(`Product: ${name}`);
+  lines.push(`Data points: ${sorted.length}`);
+  lines.push(`Date range: ${sorted[0].date} to ${latest.date}`);
+  lines.push("");
+
+  // Price history table
+  lines.push("PRICE HISTORY");
+  for (const r of sorted) {
+    const po = r.poPrice != null ? `PO £${r.poPrice.toFixed(2)}` : "";
+    const erp = r.erpPrice != null ? `ERP £${r.erpPrice.toFixed(2)}` : "";
+    const diff = r.diff != null ? `Diff £${r.diff.toFixed(2)}` : "";
+    lines.push(`  ${r.date}  ${r.poRef}  ${po}  ${erp}  ${diff}  [${r.status}]`);
+  }
+  lines.push("");
+
+  // Trend analysis
+  const erpPrices = sorted.filter((r) => r.erpPrice != null).map((r) => r.erpPrice);
+  if (erpPrices.length >= 2) {
+    const first = erpPrices[0];
+    const last = erpPrices[erpPrices.length - 1];
+    const change = last - first;
+    const changePct = first !== 0 ? ((change / first) * 100).toFixed(1) : "N/A";
+    const direction = change > 0.01 ? "INCREASING" : change < -0.01 ? "DECREASING" : "STABLE";
+
+    lines.push("TREND");
+    lines.push(`  Direction: ${direction}`);
+    lines.push(`  First ERP price: £${first.toFixed(2)}`);
+    lines.push(`  Latest ERP price: £${last.toFixed(2)}`);
+    lines.push(`  Total change: ${change >= 0 ? "+" : ""}£${change.toFixed(2)} (${change >= 0 ? "+" : ""}${changePct}%)`);
+
+    // Volatility
+    const mean = erpPrices.reduce((a, b) => a + b, 0) / erpPrices.length;
+    const variance = erpPrices.reduce((sum, p) => sum + (p - mean) ** 2, 0) / (erpPrices.length - 1);
+    const sd = Math.sqrt(variance);
+    lines.push(`  Volatility (std dev): £${sd.toFixed(2)}`);
+    lines.push("");
+  }
+
+  // Exception stats
+  const exceptionCount = sorted.filter((r) => r.status === "Exception").length;
+  const exceptionRate = ((exceptionCount / sorted.length) * 100).toFixed(0);
+  lines.push("RISK FLAGS");
+  lines.push(`  Exception rate: ${exceptionRate}% (${exceptionCount}/${sorted.length} runs)`);
+  if (exceptionRate >= 50 && sorted.length >= 2) lines.push(`  ⚠ Frequent exceptions — review supplier terms`);
+  if (erpPrices.length >= 3) {
+    const mean = erpPrices.slice(0, -1).reduce((a, b) => a + b, 0) / (erpPrices.length - 1);
+    const sd2 = Math.sqrt(erpPrices.slice(0, -1).reduce((sum, p) => sum + (p - mean) ** 2, 0) / (erpPrices.length - 2));
+    if (sd2 > 0) {
+      const zScore = Math.abs((erpPrices[erpPrices.length - 1] - mean) / sd2);
+      if (zScore > 2) lines.push(`  ⚠ Price anomaly — latest price is ${zScore.toFixed(1)} std devs from historical mean`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+// ── AssessPORisk ──
+// Provides a risk assessment of the current PO based on reconciliation results
+// and historical price data. Returns accept/review/escalate recommendation.
+
+async function handleAssessPORisk() {
+  if (!agentState.results) {
+    return "No reconciliation results available. Please run ReconcilePO first.";
+  }
+
+  const results = agentState.results;
+  const s = results.summary;
+
+  // Load historical data for context
+  let historicalContext = "";
+  try {
+    const records = await readHistory();
+    if (records.length > 0) {
+      const analysis = analyzeHistory(records);
+      const m = analysis.metrics;
+
+      // Check how current PO compares to history
+      const currentExceptionRate = s.total > 0 ? ((s.exceptions / s.total) * 100) : 0;
+      const historicalExceptionRate = m.exceptionRate;
+      const rateDiff = currentExceptionRate - historicalExceptionRate;
+
+      historicalContext += "\nHISTORICAL CONTEXT\n";
+      historicalContext += `  Your historical exception rate: ${historicalExceptionRate.toFixed(1)}%\n`;
+      historicalContext += `  This PO's exception rate: ${currentExceptionRate.toFixed(1)}%\n`;
+      if (rateDiff > 5) {
+        historicalContext += `  ⚠ This PO has ${rateDiff.toFixed(1)}% MORE exceptions than your average\n`;
+      } else if (rateDiff < -5) {
+        historicalContext += `  ✓ This PO has ${Math.abs(rateDiff).toFixed(1)}% FEWER exceptions than your average\n`;
+      } else {
+        historicalContext += `  This PO is within normal range\n`;
+      }
+
+      // Check which exception SKUs have concerning history
+      const exceptionRows = results.rows.filter((r) => r.status === "Exception");
+      const concerningSKUs = [];
+
+      for (const row of exceptionRows) {
+        const norm = row.sku.trim().toUpperCase();
+        const watchItem = analysis.watchList.find((w) => w.sku === norm);
+        if (watchItem) {
+          concerningSKUs.push({ sku: row.sku, flags: watchItem.flags, risk: watchItem.riskScore });
+        }
+      }
+
+      if (concerningSKUs.length > 0) {
+        historicalContext += "\n  SKUs with historical concerns:\n";
+        for (const c of concerningSKUs.slice(0, 5)) {
+          historicalContext += `    ${c.sku} (risk: ${c.risk}/100) — ${c.flags.join(", ")}\n`;
+        }
+      }
+
+      // Check for any anomalous prices in this PO
+      const anomalousInPO = [];
+      for (const row of exceptionRows) {
+        const norm = row.sku.trim().toUpperCase();
+        const skuData = analysis.skuAnalysis.get(norm);
+        if (skuData && skuData.anomaly) {
+          anomalousInPO.push(row.sku);
+        }
+      }
+
+      if (anomalousInPO.length > 0) {
+        historicalContext += `\n  Price anomalies detected in this PO: ${anomalousInPO.join(", ")}\n`;
+      }
+    }
+  } catch {
+    // History unavailable — proceed without
+  }
+
+  // Build risk assessment
+  const lines = [];
+  lines.push("PO RISK ASSESSMENT");
+  lines.push("=".repeat(40));
+  lines.push("");
+
+  // Overview
+  lines.push("OVERVIEW");
+  lines.push(`  PO Reference: ${agentState.poFilename}`);
+  lines.push(`  Total items: ${s.total}`);
+  lines.push(`  Matches: ${s.matches} (${s.total > 0 ? ((s.matches / s.total) * 100).toFixed(0) : 0}%)`);
+  lines.push(`  Exceptions: ${s.exceptions} (${s.total > 0 ? ((s.exceptions / s.total) * 100).toFixed(0) : 0}%)`);
+  lines.push(`  Tolerances: ${s.tolerances}`);
+  lines.push(`  Warnings: ${s.warnings}`);
+  lines.push(`  Total exposure: ${formatCurrency(s.exposure)}`);
+  lines.push("");
+
+  // Biggest risks
+  const exceptionRows = results.rows
+    .filter((r) => r.status === "Exception" && r.diff != null)
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+
+  if (exceptionRows.length > 0) {
+    lines.push("TOP PRICE DISCREPANCIES");
+    for (const row of exceptionRows.slice(0, 8)) {
+      const sign = row.diff >= 0 ? "+" : "";
+      const qty = row.poQty || 1;
+      const lineImpact = Math.abs(row.diff * qty);
+      lines.push(`  ${row.sku} ${row.name || ""}`);
+      lines.push(`    PO: ${formatCurrency(row.poPrice)} → ERP: ${formatCurrency(row.erpPrice)}  (${sign}${formatCurrency(row.diff)} per unit, ${formatCurrency(lineImpact)} total)`);
+    }
+    lines.push("");
+  }
+
+  // Items not in ERP
+  const notInErp = results.rows.filter((r) => r.status === "Not in ERP");
+  if (notInErp.length > 0) {
+    lines.push(`ITEMS NOT FOUND IN ERP: ${notInErp.length}`);
+    for (const row of notInErp.slice(0, 5)) {
+      lines.push(`  ${row.sku} ${row.name || ""} — ${formatCurrency(row.poPrice)}`);
+    }
+    if (notInErp.length > 5) lines.push(`  ... and ${notInErp.length - 5} more`);
+    lines.push("");
+  }
+
+  // Historical context
+  if (historicalContext) {
+    lines.push(historicalContext);
+  }
+
+  // Recommendation
+  lines.push("");
+  lines.push("RECOMMENDATION");
+
+  const exceptionPct = s.total > 0 ? (s.exceptions / s.total) * 100 : 0;
+  const hasHighExposure = s.exposure > 100;
+  const hasNotInErp = notInErp.length > 0;
+
+  if (exceptionPct === 0 && !hasNotInErp) {
+    lines.push("  ✓ ACCEPT — All prices match or are within tolerance.");
+    lines.push("  Action: Generate ERP staging sheet and process the order.");
+  } else if (exceptionPct <= 10 && s.exposure < 50 && notInErp.length === 0) {
+    lines.push("  ✓ ACCEPT WITH REVIEW — Minor price discrepancies.");
+    lines.push(`  Action: Review ${s.exceptions} exception(s), generate credit note if needed, then process.`);
+  } else if (exceptionPct <= 30 && !hasHighExposure) {
+    lines.push("  ⚠ REVIEW — Moderate price discrepancies found.");
+    lines.push(`  Action: Generate credit note and re-invoice for ${s.exceptions} exception(s). Contact supplier if patterns persist.`);
+  } else {
+    lines.push("  🛑 ESCALATE — Significant pricing issues.");
+    lines.push(`  Action: ${s.exceptions} exceptions with ${formatCurrency(s.exposure)} exposure. Escalate to pricing team before processing.`);
+    if (hasNotInErp) lines.push(`  ${notInErp.length} item(s) not found in ERP — may be new products or incorrect SKUs.`);
+  }
+
+  return lines.join("\n");
+}
+
 // ── Register agent actions ──
 
 Office.actions.associate("ExtractPOData", async (message) => {
@@ -412,6 +666,30 @@ Office.actions.associate("GenerateERPStaging", async (message) => {
 Office.actions.associate("GenerateDashboard", async () => {
   try {
     return await handleGenerateDashboard();
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+});
+
+Office.actions.associate("GetPriceIntelligence", async () => {
+  try {
+    return await handleGetPriceIntelligence();
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+});
+
+Office.actions.associate("LookupSKU", async (message) => {
+  try {
+    return await handleLookupSKU(message);
+  } catch (err) {
+    return `Error: ${err.message}`;
+  }
+});
+
+Office.actions.associate("AssessPORisk", async () => {
+  try {
+    return await handleAssessPORisk();
   } catch (err) {
     return `Error: ${err.message}`;
   }

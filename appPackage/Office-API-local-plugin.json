@@ -75,7 +75,7 @@
     },
     {
       "name": "GenerateCreditNote",
-      "description": "Generates a credit note sheet from the last reconciliation results. Credits ALL PO lines at their original PO prices (company policy: credit everything, then re-invoice with correct prices).",
+      "description": "Generates a credit note sheet for price exception lines only. Credits exception and tolerance items at their original PO prices (negative amounts). Includes ERP price and difference for reference.",
       "parameters": {
         "type": "object",
         "properties": {},
@@ -87,8 +87,8 @@
       },
       "states": {
         "reasoning": {
-          "description": "`GenerateCreditNote` creates a formatted Excel sheet with a credit note for all PO line items. It uses the original PO prices as negative amounts.",
-          "instructions": "Only run this after a reconciliation has been completed. If no reconciliation results exist, ask the user to run ReconcilePO first."
+          "description": "`GenerateCreditNote` creates a formatted Excel sheet crediting only exception/tolerance lines at their original PO prices (negative amounts). Includes ERP price and difference columns for reference.",
+          "instructions": "Only run this after a reconciliation has been completed and exceptions were found. If no reconciliation results exist, ask the user to run ReconcilePO first."
         },
         "responding": {
           "description": "Report the credit note details.",
@@ -98,7 +98,7 @@
     },
     {
       "name": "GenerateReInvoice",
-      "description": "Generates a corrected re-invoice sheet using ERP prices for all lines. Highlights rows where the price changed from the original PO price.",
+      "description": "Generates a corrected re-invoice sheet for exception lines only. Uses ERP prices for items that had price discrepancies, with original price and difference for reference.",
       "parameters": {
         "type": "object",
         "properties": {},
@@ -110,8 +110,8 @@
       },
       "states": {
         "reasoning": {
-          "description": "`GenerateReInvoice` creates a formatted Excel sheet with a corrected invoice using ERP (correct) prices for all lines.",
-          "instructions": "Only run this after a reconciliation has been completed. If no reconciliation results exist, ask the user to run ReconcilePO first."
+          "description": "`GenerateReInvoice` creates a formatted Excel sheet re-invoicing only exception lines at corrected ERP prices. Shows original price and difference for each correction.",
+          "instructions": "Only run this after a reconciliation has been completed and exceptions were found. If no reconciliation results exist, ask the user to run ReconcilePO first."
         },
         "responding": {
           "description": "Report the re-invoice details.",
@@ -199,6 +199,80 @@
         }
       }
     }
+    ,{
+      "name": "GetPriceIntelligence",
+      "description": "Returns a conversational text report of price intelligence — trends, anomalies, top movers, watch list, and risk metrics. Use this to discuss pricing patterns without creating a sheet. Ideal for answering questions like 'What pricing trends do you see?' or 'Are there any anomalies?'",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "A formatted text report with summary metrics, trend breakdown, top movers, and watch list items."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GetPriceIntelligence` reads accumulated price history and runs trend analysis, anomaly detection, and risk scoring. Returns a text report the agent can discuss conversationally.",
+          "instructions": "Use this when the user asks about pricing trends, patterns, anomalies, or intelligence. Unlike GenerateDashboard, this does NOT create a sheet — it returns data for discussion. Needs at least one prior reconciliation."
+        },
+        "responding": {
+          "description": "Discuss the intelligence findings conversationally.",
+          "instructions": "Highlight the most important findings: any anomalies, concerning trends, and watch list items. Make specific recommendations based on the data. If the user wants visual details, suggest running GenerateDashboard for a color-coded sheet."
+        }
+      }
+    },
+    {
+      "name": "LookupSKU",
+      "description": "Looks up a specific SKU's complete price history across all reconciliation runs. Shows price timeline, trend direction, volatility, and risk flags. Use when the user asks about a specific product's pricing history.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "description": "The SKU or product code to look up. Supports partial matching."
+          }
+        },
+        "required": ["sku"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "Complete price history, trend analysis, and risk flags for the requested SKU."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`LookupSKU` searches price history for a specific SKU and returns its complete pricing story — every recorded price point, trend direction, volatility, and any risk flags.",
+          "instructions": "Use when the user asks about a specific SKU, product, or item's pricing history. The SKU parameter supports partial matching (e.g., '1234' will match '1234V001'). Needs at least one prior reconciliation with that SKU."
+        },
+        "responding": {
+          "description": "Present the SKU's pricing story.",
+          "instructions": "Explain the price trend clearly — is it going up, down, or stable? Highlight any anomalies or flags. If the price has changed significantly, quantify it. If the SKU has frequent exceptions, suggest reviewing supplier terms."
+        }
+      }
+    },
+    {
+      "name": "AssessPORisk",
+      "description": "Provides a risk assessment of the current PO based on reconciliation results and historical price data. Returns an accept/review/escalate recommendation with supporting evidence. Use after reconciliation to help the operator decide what to do.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Risk assessment with overview, top discrepancies, historical context, and accept/review/escalate recommendation."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`AssessPORisk` analyzes the current reconciliation results against historical patterns to produce a risk-based recommendation. It considers exception rate, exposure, items not in ERP, and historical anomalies.",
+          "instructions": "Run this after ReconcilePO to give the operator a clear recommendation. It combines current results with historical context for a complete picture."
+        },
+        "responding": {
+          "description": "Present the risk assessment as a clear recommendation.",
+          "instructions": "Lead with the recommendation (ACCEPT, REVIEW, or ESCALATE). Explain why with the key numbers. If there are concerning SKUs from historical analysis, call them out. Suggest next actions: generate credit note, contact supplier, or proceed with staging."
+        }
+      }
+    }
   ],
   "runtimes": [
     {
@@ -207,7 +281,7 @@
         "local_endpoint": "Microsoft.Office.Addin",
         "allowed_host": ["workbook"]
       },
-      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging", "GenerateDashboard"],
+      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging", "GenerateDashboard", "GetPriceIntelligence", "LookupSKU", "AssessPORisk"],
       "auth": {
         "type": "None"
       }
