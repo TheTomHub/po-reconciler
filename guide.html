@@ -641,10 +641,13 @@
       <tr><td>"Extract the order data from this PO"</td><td>Reads the active sheet, auto-detects columns, creates a clean staging sheet</td></tr>
       <tr><td>"Reconcile this PO using the latest price list from SharePoint"</td><td>Finds the most recent price list in your team's SharePoint, compares every line item</td></tr>
       <tr><td>"Reconcile the PO against the ERP data I've selected"</td><td>Uses the data range you've selected in Excel as the price reference</td></tr>
-      <tr><td>"Generate a credit note"</td><td>Creates a credit note sheet for all PO lines at original prices</td></tr>
+      <tr><td>"Generate a credit note"</td><td>Creates a credit note sheet for exception lines at original prices</td></tr>
       <tr><td>"Create an ERP-ready staging sheet"</td><td>Generates color-coded sheet: green (enter), yellow (review), red (hold)</td></tr>
       <tr><td>"Draft an email about the pricing discrepancies"</td><td>Writes a professional exception email you can send to your team</td></tr>
       <tr><td>"Show me price trends from my reconciliation history"</td><td>Analyses all past reconciliations and creates a Price Intelligence Dashboard</td></tr>
+      <tr><td style="background:#f0f7ff">"Assess this PO — should I accept or escalate?"</td><td>Analyses reconciliation results against historical patterns and gives a clear <b>accept / review / escalate</b> recommendation</td></tr>
+      <tr><td style="background:#f0f7ff">"What's the price history for SKU 1046?"</td><td>Looks up a specific SKU&rsquo;s full price timeline, trend, volatility, and risk flags</td></tr>
+      <tr><td style="background:#f0f7ff">"What pricing trends and anomalies do you see?"</td><td>Conversational intelligence &mdash; discusses patterns without creating a sheet</td></tr>
     </table>
 
     <h3>SharePoint integration</h3>
@@ -660,6 +663,21 @@
       If your team has multiple price lists (e.g. by supplier or category), tell the agent: "Use the Tesco price list from the Pricing folder" to help it find the right one.
     </div>
 
+    <h3>Price Intelligence (the AI moat)</h3>
+    <p>Every reconciliation builds a price history. The Copilot agent analyses this history to surface insights you'd otherwise miss:</p>
+    <ul>
+      <li><b>Risk assessment</b> &mdash; after reconciliation, the agent automatically assesses whether a PO should be accepted, reviewed, or escalated. It factors in exception rate, exposure, and historical patterns.</li>
+      <li><b>SKU lookup</b> &mdash; ask about any product and get its full price timeline, trend direction (up/down/stable), volatility, and risk flags.</li>
+      <li><b>Anomaly detection</b> &mdash; prices that fall outside their historical range are flagged automatically. No manual analysis needed.</li>
+      <li><b>Watch list</b> &mdash; SKUs with recurring issues (frequent exceptions, large changes, high volatility) are tracked and highlighted.</li>
+      <li><b>Conversational analysis</b> &mdash; unlike a static dashboard, you can ask follow-up questions: "Why is SKU 1046 on the watch list?" or "Which supplier has the most anomalies?"</li>
+    </ul>
+
+    <div class="callout tip">
+      <strong>The more you reconcile, the smarter it gets.</strong>
+      Each reconciliation adds data points. After 3&ndash;5 runs, you'll start seeing meaningful trends and the risk assessments become more accurate.
+    </div>
+
     <h3>Copilot vs. task pane</h3>
     <p>Both paths produce the same output sheets. Choose whichever fits your workflow:</p>
     <table class="mini-table">
@@ -669,6 +687,9 @@
       <tr><td>Reconcile</td><td>Click Reconcile</td><td>"Reconcile this PO"</td></tr>
       <tr><td>Actions</td><td>Click each button</td><td>"Generate credit note and staging sheet"</td></tr>
       <tr><td>Price trends</td><td>Tools tab &rarr; Dashboard</td><td>"Show me price trends"</td></tr>
+      <tr><td>Risk assessment</td><td>&mdash;</td><td>"Should I accept this PO?"</td></tr>
+      <tr><td>SKU lookup</td><td>&mdash;</td><td>"What's the history for SKU 1046?"</td></tr>
+      <tr><td>Conversational analysis</td><td>&mdash;</td><td>"What anomalies do you see?"</td></tr>
       <tr><td>Requires Copilot license</td><td>No</td><td>Yes</td></tr>
     </table>
   </div>
