@@ -30,8 +30,9 @@ Office.onReady(() => {
 });
 
 // ── ReconcilePO ──
-// Reads PO data from a sheet named "PO" (or first sheet) and ERP data from the
-// user's current selection, then runs reconciliation and writes results sheet.
+// Reads PO data from a sheet named "PO" (or first sheet) and ERP data from:
+//   1. A sheet named "ERPPrices" (written by the Copilot agent from SharePoint), or
+//   2. The user's current selection (manual fallback).
 
 async function handleReconcilePO(message) {
   const params = message ? JSON.parse(message) : {};
@@ -40,16 +41,36 @@ async function handleReconcilePO(message) {
 
   setCurrency(currency);
 
-  // Read ERP data from current selection
-  let erpData, erpColumns;
+  // Read ERP data — prefer ERPPrices sheet (from SharePoint), fall back to selected range
+  let erpData, erpColumns, erpSource;
   await Excel.run(async (context) => {
-    const selection = context.workbook.getSelectedRange();
-    selection.load("values");
+    let values;
+
+    // Check for ERPPrices sheet written by the agent from SharePoint
+    const erpSheet = context.workbook.worksheets.getItemOrNullObject("ERPPrices");
     await context.sync();
 
-    const values = selection.values;
+    if (!erpSheet.isNullObject) {
+      const usedRange = erpSheet.getUsedRange();
+      usedRange.load("values");
+      await context.sync();
+      values = usedRange.values;
+      erpSource = "SharePoint price list (ERPPrices sheet)";
+    } else {
+      // Fall back to user's selected range
+      const selection = context.workbook.getSelectedRange();
+      selection.load("values");
+      await context.sync();
+      values = selection.values;
+      erpSource = "selected range";
+    }
+
     if (!values || values.length < 2) {
-      throw new Error("Please select ERP data in Excel first (header row + data rows).");
+      throw new Error(
+        erpSource === "selected range"
+          ? "No ERP data found. Either ask the agent to load the price list from SharePoint, or select your ERP data range in Excel first."
+          : "ERPPrices sheet has no data. Please ensure the price list was written correctly from SharePoint."
+      );
     }
 
     const headers = values[0].map((h) => String(h).trim()).filter(Boolean);
@@ -127,7 +148,7 @@ async function handleReconcilePO(message) {
 
   // Format summary
   const s = results.summary;
-  return `Reconciliation complete.\n\nTotal items: ${s.total}\nPerfect matches: ${s.matches}\nWithin tolerance: ${s.tolerances}\nExceptions: ${s.exceptions}\nWarnings: ${s.warnings}\nTotal exposure: ${formatCurrency(s.exposure)}\n\nResults sheet created with color-coded status rows.`;
+  return `Reconciliation complete.\n\nERP data: ${erpSource}\nTotal items: ${s.total}\nPerfect matches: ${s.matches}\nWithin tolerance: ${s.tolerances}\nExceptions: ${s.exceptions}\nWarnings: ${s.warnings}\nTotal exposure: ${formatCurrency(s.exposure)}\n\nResults sheet created with color-coded status rows.`;
 }
 
 // ── GenerateCreditNote ──

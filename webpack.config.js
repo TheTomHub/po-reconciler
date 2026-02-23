@@ -12,7 +12,7 @@ module.exports = (env, argv) => {
     },
     output: {
       path: path.resolve(__dirname, "dist"),
-      filename: "[name].[contenthash:8].js",
+      filename: "[name].js",
       clean: true,
     },
     resolve: {

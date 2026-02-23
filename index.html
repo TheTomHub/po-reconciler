@@ -274,7 +274,7 @@
     <div class="hero-text">
       <div class="section-label">Excel Add-in + Copilot Agent</div>
       <h1>PO reconciliation with an intelligence layer</h1>
-      <p class="sub">Upload a purchase order. Compare against your ERP prices. Get credit notes, re-invoices, ERP staging, and price trend intelligence &mdash; all inside Excel.</p>
+      <p class="sub">Upload a purchase order. Chandlr fetches the latest price list from SharePoint, reconciles every line, and generates credit notes, re-invoices, and ERP staging &mdash; all inside Excel.</p>
       <div class="hero-actions">
         <a href="guide.html" class="btn btn-white">Get Started</a>
         <a href="manifest.xml" class="btn btn-ghost" download>Download Add-in</a>
@@ -338,7 +338,7 @@
       </div>
       <div class="copilot-bubble">
         <div class="copilot-label">Copilot</div>
-        <div class="copilot-msg">Reconciliation complete. <em>11 exceptions</em> found, &pound;2.28 exposure. Shall I generate a credit note?</div>
+        <div class="copilot-msg">Loaded price list from SharePoint. <em>11 exceptions</em>, &pound;847 exposure. Recommendation: <em>REVIEW.</em> Say &ldquo;Generate outputs&rdquo; to continue.</div>
       </div>
     </div>
   </div>
@@ -353,12 +353,12 @@
     <div class="intel-cols">
       <div class="intel-item">
         <h3>Copilot agent</h3>
-        <p>Registered as a declarative agent in Microsoft 365. Process orders by talking to Copilot.</p>
+        <p>Registered as a declarative agent in Microsoft 365. One prompt kicks off the entire pipeline &mdash; from PO to ERP staging.</p>
         <div class="intel-prompts">
-          <div class="intel-prompt">"Extract the PO data from this sheet"</div>
-          <div class="intel-prompt">"Reconcile against the ERP prices"</div>
-          <div class="intel-prompt">"Generate a credit note"</div>
-          <div class="intel-prompt">"Show me price trends"</div>
+          <div class="intel-prompt">"Process this PO end to end"</div>
+          <div class="intel-prompt">"Assess this PO &mdash; accept or escalate?"</div>
+          <div class="intel-prompt">"What&rsquo;s the price history for SKU 1046?"</div>
+          <div class="intel-prompt">"Show me price trends and anomalies"</div>
         </div>
       </div>
       <div class="intel-item">
@@ -428,8 +428,8 @@
         <p>PO says "1046", ERP says "1046V001"? Matched automatically. Case-insensitive, whitespace-tolerant.</p>
       </div>
       <div class="feat">
-        <h3>Color-coded everything</h3>
-        <p>Green = match. Yellow = check. Red = stop. Every output sheet is instantly readable.</p>
+        <h3>SharePoint price lists</h3>
+        <p>The Copilot agent automatically fetches the latest price list from your team&rsquo;s SharePoint. Always up to date. No manual downloads.</p>
       </div>
       <div class="feat">
         <h3>Full audit trail</h3>
@@ -440,8 +440,8 @@
         <p>9 validation rules catch duplicates, missing prices, quantity outliers, and line total mismatches before reconciliation.</p>
       </div>
       <div class="feat">
-        <h3>Your data stays local</h3>
-        <p>Everything runs inside your Excel workbook. No data is sent to external servers. Nothing leaves the spreadsheet.</p>
+        <h3>Output stays in your workbook</h3>
+        <p>All results, credit notes, re-invoices, and staging sheets are written directly to your Excel workbook. Nothing sent to external servers.</p>
       </div>
     </div>
   </div>
@@ -471,7 +471,7 @@
       <div class="install-step">
         <div class="install-num">4</div>
         <strong>Reconcile</strong>
-        <p>Upload PO, select ERP data, click go.</p>
+        <p>Click buttons or say &ldquo;Process this PO end to end&rdquo; to Copilot.</p>
       </div>
     </div>
   </div>

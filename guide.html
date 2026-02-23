@@ -291,8 +291,8 @@
         <span>CSV, Excel (.xlsx), or PDF</span>
       </div>
       <div class="req-card">
-        <strong>ERP price extract</strong>
-        <span>Paste or open in a sheet &mdash; needs SKU + Price columns</span>
+        <strong>ERP price list</strong>
+        <span>Stored in SharePoint (fetched automatically by Copilot agent) or paste into a sheet manually</span>
       </div>
       <div class="req-card">
         <strong>Internet connection</strong>
@@ -375,7 +375,7 @@
       <span class="pipeline-arrow">&rarr;</span>
       <span class="pipeline-step green">ERP Staging</span>
     </div>
-    <p>The task pane has three tabs: <b>Reconcile</b> (steps 1&ndash;4), <b>Actions</b> (steps 5&ndash;7), and <b>Tools</b> (price intelligence). With the Copilot agent, steps 2&ndash;3 can be automated via SharePoint &mdash; see <a href="#copilot">Using the Copilot Agent</a>.</p>
+    <p>The task pane has three tabs: <b>Reconcile</b>, <b>Actions</b>, and <b>Tools</b>. With the Copilot agent, the entire pipeline runs from a single prompt &mdash; the agent fetches your price list from SharePoint automatically, so you skip Step 3. See <a href="#copilot">Using the Copilot Agent</a>.</p>
   </div>
 
   <!-- Step 1: Upload PO -->
@@ -448,7 +448,13 @@
   <!-- Step 3: Load ERP Data -->
   <div class="section" id="step3">
     <h2>Step 3: Load ERP Data</h2>
-    <p>Now load your ERP price list so Chandlr can compare prices.</p>
+
+    <div class="callout tip">
+      <strong>Using the Copilot agent? Skip this step.</strong>
+      After extraction, the agent automatically searches SharePoint for the latest price list matching the account name and writes it to a sheet called <b>ERPPrices</b> in your workbook. Reconciliation then runs against that sheet &mdash; no manual selection needed.
+    </div>
+
+    <p>If you are using the task pane (button mode), load your ERP price list manually:</p>
 
     <div class="step">
       <div class="step-num">A</div>
@@ -561,10 +567,10 @@
     <p>Creates an email draft summarizing the top pricing exceptions. You can copy the text or open it directly in your email client.</p>
 
     <h3>Generate Credit Note</h3>
-    <p>Creates a <b>CreditNote</b> sheet that credits ALL PO lines at their original PO prices (as negative amounts). This is company policy: credit everything, then re-invoice at correct prices.</p>
+    <p>Creates a <b>CreditNote</b> sheet crediting <b>exception lines only</b> at their original PO prices (as negative amounts). Lines that matched or were within tolerance are not included.</p>
 
     <h3>Generate Re-Invoice</h3>
-    <p>Creates a <b>ReInvoice</b> sheet with corrected ERP prices for all lines. Rows where the price changed are highlighted yellow.</p>
+    <p>Creates a <b>ReInvoice</b> sheet re-invoicing <b>exception lines only</b> at corrected ERP prices. Rows where the price changed are highlighted yellow.</p>
 
     <div class="callout info">
       <strong>Credit Note + Re-Invoice buttons only appear when there are exceptions.</strong>
@@ -638,29 +644,36 @@
     <h3>What you can say</h3>
     <table class="mini-table">
       <tr><th style="width:40%">Prompt</th><th>What happens</th></tr>
+      <tr style="background:#f0f7ff"><td><b>"Process this PO end to end"</b></td><td>Extracts PO data, fetches the latest price list from SharePoint automatically, reconciles every line, and gives a risk recommendation &mdash; one prompt, no manual steps</td></tr>
       <tr><td>"Extract the order data from this PO"</td><td>Reads the active sheet, auto-detects columns, creates a clean staging sheet</td></tr>
-      <tr><td>"Reconcile this PO using the latest price list from SharePoint"</td><td>Finds the most recent price list in your team's SharePoint, compares every line item</td></tr>
-      <tr><td>"Reconcile the PO against the ERP data I've selected"</td><td>Uses the data range you've selected in Excel as the price reference</td></tr>
-      <tr><td>"Generate a credit note"</td><td>Creates a credit note sheet for exception lines at original prices</td></tr>
+      <tr><td>"Generate outputs"</td><td>Generates credit note and re-invoice for exception lines</td></tr>
+      <tr><td>"Email + staging"</td><td>Drafts the exception email and creates the ERP staging sheet</td></tr>
       <tr><td>"Create an ERP-ready staging sheet"</td><td>Generates color-coded sheet: green (enter), yellow (review), red (hold)</td></tr>
       <tr><td>"Draft an email about the pricing discrepancies"</td><td>Writes a professional exception email you can send to your team</td></tr>
       <tr><td>"Show me price trends from my reconciliation history"</td><td>Analyses all past reconciliations and creates a Price Intelligence Dashboard</td></tr>
-      <tr><td style="background:#f0f7ff">"Assess this PO — should I accept or escalate?"</td><td>Analyses reconciliation results against historical patterns and gives a clear <b>accept / review / escalate</b> recommendation</td></tr>
-      <tr><td style="background:#f0f7ff">"What's the price history for SKU 1046?"</td><td>Looks up a specific SKU&rsquo;s full price timeline, trend, volatility, and risk flags</td></tr>
-      <tr><td style="background:#f0f7ff">"What pricing trends and anomalies do you see?"</td><td>Conversational intelligence &mdash; discusses patterns without creating a sheet</td></tr>
+      <tr style="background:#f0f7ff"><td>"Assess this PO &mdash; should I accept or escalate?"</td><td>Analyses reconciliation results against historical patterns and gives a clear <b>ACCEPT / REVIEW / ESCALATE</b> recommendation</td></tr>
+      <tr style="background:#f0f7ff"><td>"What's the price history for SKU 1046?"</td><td>Looks up a specific SKU&rsquo;s full price timeline, trend, volatility, and risk flags</td></tr>
+      <tr style="background:#f0f7ff"><td>"What pricing trends and anomalies do you see?"</td><td>Conversational intelligence &mdash; discusses patterns without creating a sheet</td></tr>
     </table>
 
     <h3>SharePoint integration</h3>
-    <p>Chandlr can access price lists and reference data stored in your team's SharePoint folders. This means:</p>
+    <p>Chandlr has access to your team's SharePoint and OneDrive. After extracting a PO, the agent automatically:</p>
+    <ol>
+      <li>Reads the customer/account name from the PO</li>
+      <li>Searches SharePoint for the latest price list file matching that account</li>
+      <li>Writes the price data into a sheet called <b>ERPPrices</b> in your workbook</li>
+      <li>Runs reconciliation against that sheet &mdash; no manual selection needed</li>
+    </ol>
+    <p>This means:</p>
     <ul>
-      <li><b>No manual copy-paste</b> &mdash; the agent finds the latest price list automatically</li>
-      <li><b>Always up-to-date</b> &mdash; if your team updates the price list daily, the agent uses today's version</li>
+      <li><b>No manual copy-paste</b> &mdash; the agent finds and loads the latest price list automatically</li>
+      <li><b>Always up-to-date</b> &mdash; if your team updates the price list, the agent uses the latest version</li>
       <li><b>Works with existing workflows</b> &mdash; no need to change where you store files</li>
     </ul>
 
     <div class="callout tip">
-      <strong>Tip: be specific about which price list</strong>
-      If your team has multiple price lists (e.g. by supplier or category), tell the agent: "Use the Tesco price list from the Pricing folder" to help it find the right one.
+      <strong>Tip: be specific if needed</strong>
+      The agent searches by account name automatically. If you have multiple price lists for the same account (e.g. by brand), tell the agent: "Use the Hydroflask price list" to narrow it down.
     </div>
 
     <h3>Price Intelligence (the AI moat)</h3>
@@ -682,12 +695,14 @@
     <p>Both paths produce the same output sheets. Choose whichever fits your workflow:</p>
     <table class="mini-table">
       <tr><th>Feature</th><th>Task Pane (buttons)</th><th>Copilot Agent (chat)</th></tr>
-      <tr><td>Upload PO file</td><td>Click &amp; browse</td><td>"Extract the PO from this sheet"</td></tr>
-      <tr><td>Load ERP data</td><td>Select range &amp; click Load</td><td>Auto-fetches from SharePoint</td></tr>
-      <tr><td>Reconcile</td><td>Click Reconcile</td><td>"Reconcile this PO"</td></tr>
-      <tr><td>Actions</td><td>Click each button</td><td>"Generate credit note and staging sheet"</td></tr>
-      <tr><td>Price trends</td><td>Tools tab &rarr; Dashboard</td><td>"Show me price trends"</td></tr>
-      <tr><td>Risk assessment</td><td>&mdash;</td><td>"Should I accept this PO?"</td></tr>
+      <tr><td>Full end-to-end pipeline</td><td>Click through each step</td><td>"Process this PO end to end"</td></tr>
+      <tr><td>Upload / extract PO</td><td>Click &amp; browse</td><td>"Extract the PO from this sheet"</td></tr>
+      <tr><td>Load ERP data</td><td>Select range &amp; click Load</td><td>Auto-fetched from SharePoint (writes to ERPPrices sheet)</td></tr>
+      <tr><td>Reconcile</td><td>Click Reconcile</td><td>Runs automatically after SharePoint fetch</td></tr>
+      <tr><td>Credit note + re-invoice</td><td>Click each button</td><td>"Generate outputs"</td></tr>
+      <tr><td>ERP staging + email</td><td>Click each button</td><td>"Email + staging"</td></tr>
+      <tr><td>Price trends dashboard</td><td>Tools tab &rarr; Dashboard</td><td>"Show me price trends"</td></tr>
+      <tr><td>Risk assessment</td><td>&mdash;</td><td>"Assess this PO &mdash; accept or escalate?"</td></tr>
       <tr><td>SKU lookup</td><td>&mdash;</td><td>"What's the history for SKU 1046?"</td></tr>
       <tr><td>Conversational analysis</td><td>&mdash;</td><td>"What anomalies do you see?"</td></tr>
       <tr><td>Requires Copilot license</td><td>No</td><td>Yes</td></tr>
@@ -702,7 +717,8 @@
     <p>If Chandlr can't auto-detect your columns, it shows dropdowns. Make sure your header row uses recognizable names like "SKU", "Price", "Qty", "Description", etc. Rename ambiguous headers if needed.</p>
 
     <h3>ERP data won't load</h3>
-    <p>Make sure you've <b>selected</b> the data range in Excel before clicking "Load Selection". The selection must include the header row.</p>
+    <p>If using the <b>Copilot agent</b>: ERP data is loaded automatically from SharePoint &mdash; no selection needed. If the agent can't find a matching price list, it will tell you and ask you to select the data range manually.</p>
+    <p>If using the <b>task pane</b>: make sure you've <b>selected</b> the data range in Excel before clicking "Load Selection". The selection must include the header row.</p>
 
     <h3>SKUs don't match between PO and ERP</h3>
     <p>Chandlr handles common mismatches automatically:</p>
