@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chandlr — AI-Powered Order Processing Inside Excel</title>
+  <meta name="description" content="Excel add-in and Copilot agent for PO reconciliation, credit notes, re-invoicing, ERP staging, and price intelligence. Works with any ERP.">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #323130;
+      line-height: 1.6;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+    .section-label {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; margin-bottom: 8px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, #0d1b2a 0%, #1b3a5c 50%, #264f7a 100%);
+      color: #fff;
+      padding: 64px 24px 0;
+      overflow: hidden;
+    }
+    .hero-inner {
+      max-width: 960px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+      align-items: center;
+    }
+    .hero-text { padding-bottom: 64px; }
+    .hero-text .section-label { color: #7eb8da; }
+    .hero h1 {
+      font-size: 40px; font-weight: 700; letter-spacing: -0.5px;
+      line-height: 1.15; margin-bottom: 16px;
+    }
+    .hero .sub {
+      font-size: 17px; opacity: 0.85; line-height: 1.6;
+      margin-bottom: 28px; max-width: 440px;
+    }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; padding: 12px 28px; border-radius: 6px;
+      font-size: 15px; font-weight: 600; text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
+    .btn-white { background: #fff; color: #1b3a5c; }
+    .btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-blue { background: #1b3a5c; color: #fff; }
+    .btn-blue:hover { background: #264f7a; }
+
+    /* Hero product mockup */
+    .hero-visual {
+      position: relative;
+      align-self: end;
+    }
+    .mockup-excel {
+      background: #fff; border-radius: 8px 8px 0 0;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+      overflow: hidden;
+      transform: translateY(2px);
+    }
+    .mockup-toolbar {
+      background: #217346; color: #fff;
+      padding: 6px 12px; font-size: 11px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mockup-toolbar span { opacity: 0.7; font-weight: 400; }
+    .mockup-tab-bar {
+      background: #f3f2f1; display: flex; font-size: 11px;
+      border-bottom: 1px solid #e1dfdd;
+    }
+    .mockup-tab {
+      padding: 5px 14px; color: #605e5c;
+    }
+    .mockup-tab.active {
+      background: #fff; color: #1b3a5c; font-weight: 600;
+      border-bottom: 2px solid #1b3a5c;
+    }
+    .mockup-body { padding: 12px; font-size: 11px; }
+    .mockup-row {
+      display: grid; grid-template-columns: 90px 1fr 60px 60px 70px;
+      gap: 1px; margin-bottom: 1px;
+    }
+    .mockup-cell {
+      padding: 4px 6px; background: #fff;
+      border: 1px solid #e8e6e4; font-size: 10px; color: #323130;
+    }
+    .mockup-cell.header {
+      background: #1b3a5c; color: #fff; font-weight: 600; font-size: 9px;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .mockup-cell.match { background: #E2EFDA; }
+    .mockup-cell.exception { background: #FFC7CE; }
+    .mockup-cell.tolerance { background: #FFEB9C; }
+
+    /* Copilot bubble overlaid on mockup */
+    .copilot-bubble {
+      position: absolute; bottom: 60px; right: -20px;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 12px 16px; max-width: 240px;
+      font-size: 12px; color: #323130;
+      border: 1px solid #e8e6e4;
+    }
+    .copilot-label {
+      font-size: 10px; font-weight: 600; color: #7719aa;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 4px;
+    }
+    .copilot-label::before {
+      content: ""; display: inline-block;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: linear-gradient(135deg, #7719aa, #c06edb);
+    }
+    .copilot-msg { color: #605e5c; line-height: 1.4; }
+    .copilot-msg em { color: #323130; font-style: normal; font-weight: 500; }
+
+    /* ── Intelligence layer (right under hero) ── */
+    .intel {
+      background: #0d1b2a; color: #fff;
+      padding: 56px 24px;
+    }
+    .intel .section-label { color: #7eb8da; text-align: center; }
+    .intel h2 {
+      text-align: center; font-size: 30px; margin-bottom: 8px;
+    }
+    .intel .sub {
+      text-align: center; font-size: 15px; opacity: 0.6;
+      max-width: 600px; margin: 0 auto 40px;
+    }
+    .intel-cols {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px; max-width: 960px; margin: 0 auto;
+    }
+    .intel-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 24px;
+    }
+    .intel-item h3 { font-size: 15px; color: #7eb8da; margin-bottom: 6px; }
+    .intel-item p { font-size: 13px; opacity: 0.8; line-height: 1.5; }
+    .intel-prompts {
+      margin-top: 10px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .intel-prompt {
+      background: rgba(255,255,255,0.05); border-radius: 4px;
+      padding: 5px 8px; font-size: 11px; color: rgba(255,255,255,0.6);
+      font-style: italic;
+    }
+
+    /* ── How it works (pipeline) ── */
+    .pipeline {
+      padding: 56px 24px; background: #fff;
+    }
+    .pipeline .section-label { color: #1b3a5c; text-align: center; }
+    .pipeline h2 {
+      text-align: center; font-size: 28px; color: #1b3a5c;
+      margin-bottom: 36px;
+    }
+    .pipe-steps {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 0; max-width: 960px; margin: 0 auto;
+      position: relative;
+    }
+    .pipe-steps::before {
+      content: ""; position: absolute;
+      top: 24px; left: 40px; right: 40px;
+      height: 2px; background: #d6e4f0;
+    }
+    .pipe-step {
+      text-align: center; position: relative; z-index: 1;
+    }
+    .pipe-dot {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #1b3a5c; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 700; margin: 0 auto 10px;
+      box-shadow: 0 2px 8px rgba(27,58,92,0.2);
+    }
+    .pipe-step h3 { font-size: 13px; font-weight: 600; color: #1b3a5c; margin-bottom: 2px; }
+    .pipe-step p { font-size: 11px; color: #797775; padding: 0 4px; }
+
+    /* ── Features ── */
+    .features {
+      padding: 56px 24px; background: #f8f8f8;
+    }
+    .features .section-label { color: #1b3a5c; text-align: center; }
+    .features h2 {
+      text-align: center; font-size: 28px; color: #1b3a5c;
+      margin-bottom: 36px;
+    }
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; max-width: 960px; margin: 0 auto;
+    }
+    .feat {
+      background: #fff; border: 1px solid #edebe9;
+      border-radius: 8px; padding: 20px;
+    }
+    .feat h3 { font-size: 14px; color: #1b3a5c; margin-bottom: 4px; }
+    .feat p { font-size: 13px; color: #605e5c; line-height: 1.5; }
+
+    /* ── Install ── */
+    .install {
+      padding: 56px 24px; background: #fff;
+    }
+    .install .section-label { color: #1b3a5c; text-align: center; }
+    .install h2 {
+      text-align: center; font-size: 28px; color: #1b3a5c;
+      margin-bottom: 32px;
+    }
+    .install-steps {
+      display: flex; gap: 20px; justify-content: center;
+      max-width: 800px; margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .install-step {
+      flex: 1; min-width: 160px; max-width: 200px;
+      text-align: center; padding: 16px;
+    }
+    .install-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #1b3a5c; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; margin: 0 auto 8px; font-size: 14px;
+    }
+    .install-step strong { font-size: 13px; display: block; margin-bottom: 2px; }
+    .install-step p { font-size: 12px; color: #797775; margin: 0; }
+
+    /* ── CTA ── */
+    .cta {
+      padding: 56px 24px; text-align: center;
+      background: linear-gradient(160deg, #0d1b2a 0%, #1b3a5c 100%); color: #fff;
+    }
+    .cta h2 { font-size: 28px; margin-bottom: 8px; }
+    .cta p { font-size: 15px; opacity: 0.8; max-width: 480px; margin: 0 auto 24px; }
+    .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta .privacy {
+      margin-top: 16px; font-size: 12px; opacity: 0.5;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 32px 24px;
+      text-align: center; font-size: 12px; color: #a19f9d;
+      border-top: 1px solid #edebe9;
+    }
+    .footer a { color: #605e5c; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero-inner { grid-template-columns: 1fr; }
+      .hero-text { padding-bottom: 32px; text-align: center; }
+      .hero-actions { justify-content: center; }
+      .hero-visual { display: none; }
+      .hero h1 { font-size: 30px; }
+      .intel-cols { grid-template-columns: 1fr; }
+      .pipe-steps { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .pipe-steps::before { display: none; }
+      .feat-grid { grid-template-columns: 1fr; }
+      .install-steps { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="section-label">Excel Add-in + Copilot Agent</div>
+      <h1>PO reconciliation with an intelligence layer</h1>
+      <p class="sub">Upload a purchase order. Chandlr fetches the latest price list from SharePoint, reconciles every line, and generates credit notes, re-invoices, and ERP staging &mdash; all inside Excel.</p>
+      <div class="hero-actions">
+        <a href="guide.html" class="btn btn-white">Get Started</a>
+        <a href="manifest.xml" class="btn btn-ghost" download>Download Add-in</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="mockup-excel">
+        <div class="mockup-toolbar">
+          Chandlr <span>&mdash; Reconciliation Results</span>
+        </div>
+        <div class="mockup-tab-bar">
+          <div class="mockup-tab active">Results</div>
+          <div class="mockup-tab">CreditNote</div>
+          <div class="mockup-tab">ERPStaging</div>
+          <div class="mockup-tab">Dashboard</div>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-row">
+            <div class="mockup-cell header">SKU</div>
+            <div class="mockup-cell header">Product</div>
+            <div class="mockup-cell header">PO</div>
+            <div class="mockup-cell header">ERP</div>
+            <div class="mockup-cell header">Status</div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-cell match">1001V001</div>
+            <div class="mockup-cell match">Organic Granola 500g</div>
+            <div class="mockup-cell match">&pound;4.29</div>
+            <div class="mockup-cell match">&pound;4.29</div>
+            <div class="mockup-cell match">Match</div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-cell match">1003V001</div>
+            <div class="mockup-cell match">Free Range Eggs 12pk</div>
+            <div class="mockup-cell match">&pound;3.15</div>
+            <div class="mockup-cell match">&pound;3.15</div>
+            <div class="mockup-cell match">Match</div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-cell tolerance">1006V001</div>
+            <div class="mockup-cell tolerance">Cornish Butter 250g</div>
+            <div class="mockup-cell tolerance">&pound;2.49</div>
+            <div class="mockup-cell tolerance">&pound;2.50</div>
+            <div class="mockup-cell tolerance">Tolerance</div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-cell exception">1008V003</div>
+            <div class="mockup-cell exception">Chicken Breast 500g</div>
+            <div class="mockup-cell exception">&pound;4.29</div>
+            <div class="mockup-cell exception">&pound;4.49</div>
+            <div class="mockup-cell exception">Exception</div>
+          </div>
+          <div class="mockup-row">
+            <div class="mockup-cell exception">1047</div>
+            <div class="mockup-cell exception">Nappies Size 4 x40</div>
+            <div class="mockup-cell exception">&pound;6.99</div>
+            <div class="mockup-cell exception">&pound;7.49</div>
+            <div class="mockup-cell exception">Exception</div>
+          </div>
+        </div>
+      </div>
+      <div class="copilot-bubble">
+        <div class="copilot-label">Copilot</div>
+        <div class="copilot-msg">Loaded price list from SharePoint. <em>11 exceptions</em>, &pound;847 exposure. Recommendation: <em>REVIEW.</em> Say &ldquo;Generate outputs&rdquo; to continue.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Intelligence Layer (the moat) ── -->
+<div class="intel">
+  <div class="container">
+    <div class="section-label">The moat</div>
+    <h2>An intelligence layer on top of order processing</h2>
+    <p class="sub">Chandlr is both an Excel add-in and a Microsoft 365 Copilot agent. Click buttons or speak plain English.</p>
+    <div class="intel-cols">
+      <div class="intel-item">
+        <h3>Copilot agent</h3>
+        <p>Registered as a declarative agent in Microsoft 365. One prompt kicks off the entire pipeline &mdash; from PO to ERP staging.</p>
+        <div class="intel-prompts">
+          <div class="intel-prompt">"Process this PO end to end"</div>
+          <div class="intel-prompt">"Assess this PO &mdash; accept or escalate?"</div>
+          <div class="intel-prompt">"What&rsquo;s the price history for SKU 1046?"</div>
+          <div class="intel-prompt">"Show me price trends and anomalies"</div>
+        </div>
+      </div>
+      <div class="intel-item">
+        <h3>Smart extraction</h3>
+        <p>Upload CSV, Excel, or PDF. Chandlr auto-detects columns &mdash; SKU, price, qty, description, UOM &mdash; from any format. No templates. No mapping rules.</p>
+      </div>
+      <div class="intel-item">
+        <h3>Price intelligence</h3>
+        <p>Every reconciliation builds a price history. Chandlr detects trends, flags anomalies, and surfaces the SKUs drifting toward exceptions &mdash; before they hit your margin.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Pipeline ── -->
+<div class="pipeline">
+  <div class="container">
+    <div class="section-label">Workflow</div>
+    <h2>Six steps. One workbook. Zero manual spreadsheets.</h2>
+    <div class="pipe-steps">
+      <div class="pipe-step">
+        <div class="pipe-dot">1</div>
+        <h3>Capture</h3>
+        <p>Upload any PO format</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-dot">2</div>
+        <h3>Validate</h3>
+        <p>9-rule quality gate</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-dot">3</div>
+        <h3>Reconcile</h3>
+        <p>PO vs ERP prices</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-dot">4</div>
+        <h3>Resolve</h3>
+        <p>Credit notes + re-invoices</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-dot">5</div>
+        <h3>Stage</h3>
+        <p>ERP-ready sheet</p>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-dot">6</div>
+        <h3>Predict</h3>
+        <p>Trends + anomaly alerts</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Features ── -->
+<div class="features">
+  <div class="container">
+    <div class="section-label">Why Chandlr</div>
+    <h2>Built for order processing teams</h2>
+    <div class="feat-grid">
+      <div class="feat">
+        <h3>Works with any ERP</h3>
+        <p>SAP, Oracle, D365, NetSuite. Chandlr stages data in Excel &mdash; you enter it however you normally do. No API connectors.</p>
+      </div>
+      <div class="feat">
+        <h3>Prefix SKU matching</h3>
+        <p>PO says "1046", ERP says "1046V001"? Matched automatically. Case-insensitive, whitespace-tolerant.</p>
+      </div>
+      <div class="feat">
+        <h3>SharePoint price lists</h3>
+        <p>The Copilot agent automatically fetches the latest price list from your team&rsquo;s SharePoint. Always up to date. No manual downloads.</p>
+      </div>
+      <div class="feat">
+        <h3>Full audit trail</h3>
+        <p>Results, credit notes, re-invoices, ERP staging, and price history &mdash; all saved as sheets in the workbook.</p>
+      </div>
+      <div class="feat">
+        <h3>Data quality gate</h3>
+        <p>9 validation rules catch duplicates, missing prices, quantity outliers, and line total mismatches before reconciliation.</p>
+      </div>
+      <div class="feat">
+        <h3>Output stays in your workbook</h3>
+        <p>All results, credit notes, re-invoices, and staging sheets are written directly to your Excel workbook. Nothing sent to external servers.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Install ── -->
+<div class="install">
+  <div class="container">
+    <div class="section-label">Setup</div>
+    <h2>Up and running in 2 minutes</h2>
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="install-num">1</div>
+        <strong>Download</strong>
+        <p>One XML file. No installers.</p>
+      </div>
+      <div class="install-step">
+        <div class="install-num">2</div>
+        <strong>Upload in Excel</strong>
+        <p>Insert &rarr; Office Add-ins &rarr; Upload.</p>
+      </div>
+      <div class="install-step">
+        <div class="install-num">3</div>
+        <strong>Open Chandlr</strong>
+        <p>Click the Chandlr tab in the ribbon.</p>
+      </div>
+      <div class="install-step">
+        <div class="install-num">4</div>
+        <strong>Reconcile</strong>
+        <p>Click buttons or say &ldquo;Process this PO end to end&rdquo; to Copilot.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CTA ── -->
+<div class="cta">
+  <h2>Process your first PO in under a minute</h2>
+  <p>Install the add-in, upload a purchase order, and see reconciliation results in seconds.</p>
+  <div class="cta-actions">
+    <a href="guide.html" class="btn btn-white">Read the Guide</a>
+    <a href="manifest.xml" class="btn btn-ghost" download>Download Add-in</a>
+  </div>
+  <p class="privacy">All data stays in your Excel workbook. Nothing is sent externally.</p>
+</div>
+
+<!-- ── Footer ── -->
+<div class="footer">
+  Chandlr &mdash; AI-powered order processing inside Excel.<br>
+  Questions? <a href="mailto:hello@chandlr.com">hello@chandlr.com</a>
+</div>
+
+</body>
+</html>
