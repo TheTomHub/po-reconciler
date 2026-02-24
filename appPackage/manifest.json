@@ -1,0 +1,157 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
+  "manifestVersion": "devPreview",
+  "id": "424de98e-17e2-4fed-8115-791671162f90",
+  "version": "2.2.0",
+  "name": {
+    "short": "Chandlr",
+    "full": "Chandlr — Order Processing Suite"
+  },
+  "description": {
+    "short": "Order processing made simple — reconcile, extract, resolve",
+    "full": "Order processing suite: PO extraction, price reconciliation, credit notes, re-invoicing, and exception reporting. Works as both an Excel add-in and a Copilot agent."
+  },
+  "developer": {
+    "name": "Chandlr",
+    "websiteUrl": "https://thetomhub.github.io/po-reconciler",
+    "privacyUrl": "https://thetomhub.github.io/po-reconciler",
+    "termsOfUseUrl": "https://thetomhub.github.io/po-reconciler"
+  },
+  "icons": {
+    "outline": "assets/outline.png",
+    "color": "assets/color.png"
+  },
+  "accentColor": "#1F4E79",
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        {
+          "name": "Document.ReadWrite.User",
+          "type": "Delegated"
+        }
+      ]
+    }
+  },
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "POReconcilerAgent",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  },
+  "extensions": [
+    {
+      "requirements": {
+        "scopes": ["workbook"]
+      },
+      "runtimes": [
+        {
+          "id": "CommandsRuntime",
+          "type": "general",
+          "code": {
+            "page": "https://thetomhub.github.io/po-reconciler/dist/commands.html",
+            "script": "https://thetomhub.github.io/po-reconciler/dist/commands.js"
+          },
+          "lifetime": "short",
+          "actions": [
+            {
+              "id": "ExtractPOData",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "ReconcilePO",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateCreditNote",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateReInvoice",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "DraftExceptionEmail",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateERPStaging",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GenerateDashboard",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "GetPriceIntelligence",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "LookupSKU",
+              "type": "executeDataFunction"
+            },
+            {
+              "id": "AssessPORisk",
+              "type": "executeDataFunction"
+            }
+          ]
+        },
+        {
+          "id": "TaskpaneRuntime",
+          "type": "general",
+          "code": {
+            "page": "https://thetomhub.github.io/po-reconciler/dist/taskpane.html"
+          },
+          "lifetime": "long",
+          "actions": [
+            {
+              "id": "ShowTaskpane",
+              "type": "openPage",
+              "view": "taskpane"
+            }
+          ]
+        }
+      ],
+      "ribbons": [
+        {
+          "contexts": ["default"],
+          "tabs": [
+            {
+              "id": "TabPOReconciler",
+              "label": "Chandlr",
+              "groups": [
+                {
+                  "id": "CommandsGroup",
+                  "label": "Order Processing",
+                  "icons": [
+                    { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-16.png" },
+                    { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-32.png" },
+                    { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-64.png" }
+                  ],
+                  "controls": [
+                    {
+                      "id": "TaskpaneButton",
+                      "type": "button",
+                      "label": "Open Chandlr",
+                      "icons": [
+                        { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-16.png" },
+                        { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-32.png" },
+                        { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-64.png" }
+                      ],
+                      "supertip": {
+                        "title": "Open Chandlr",
+                        "description": "Open the Chandlr task pane"
+                      },
+                      "actionId": "ShowTaskpane"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

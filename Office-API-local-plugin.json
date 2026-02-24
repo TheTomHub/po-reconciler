@@ -1,0 +1,290 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.3/schema.json",
+  "schema_version": "v2.3",
+  "name_for_human": "Chandlr",
+  "description_for_human": "Order processing made simple",
+  "description_for_model": "Plugin for purchase order processing in Excel. ALWAYS use these functions for PO extraction, price reconciliation, credit notes, re-invoicing, exception emails, ERP staging, risk assessment, and price intelligence. Never attempt these operations manually or with code interpreter. These functions read and write Excel sheets directly.",
+  "namespace": "addinfunction",
+  "functions": [
+    {
+      "name": "ExtractPOData",
+      "description": "Extracts structured order data from a PO in the active sheet. Auto-detects columns (SKU, price, qty, name, delivery date, UOM, customer, PO reference) and writes a clean staging sheet.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sheetName": {
+            "type": "string",
+            "description": "Name of the sheet to extract from. If not specified, uses the active sheet.",
+            "default": ""
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code: GBP, USD, or EUR. Default: GBP",
+            "default": "GBP"
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Extraction summary including line count, total value, detected fields, and any warnings."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types, normalizes the data, and writes a standardized staging sheet.",
+          "instructions": "Before running, confirm the user has PO data open in a sheet. If they mention a specific sheet name, pass it as the sheetName parameter."
+        },
+        "responding": {
+          "description": "Report the extraction results clearly.",
+          "instructions": "Present: PO reference, customer name, line count, total value, which fields were detected, and any warnings. Suggest running ReconcilePO next if they have ERP data."
+        }
+      }
+    },
+    {
+      "name": "ReconcilePO",
+      "description": "Reconciles a customer PO against ERP price data. Reads PO data from the staging sheet, reads ERP data from the selected range, compares prices per SKU, and writes a reconciliation results sheet.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "tolerance": {
+            "type": "string",
+            "description": "Price tolerance threshold in currency units, e.g. 0.02. Default: 0.02",
+            "default": "0.02"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code: GBP, USD, or EUR. Default: GBP",
+            "default": "GBP"
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Summary of reconciliation results including total items, matches, exceptions, and total exposure."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`ReconcilePO` compares every line item price from the customer PO against the corresponding SKU price in the ERP data.",
+          "instructions": "ERP data source priority: (1) If you have already written SharePoint price list data to a sheet named 'ERPPrices' in this workbook, ReconcilePO will use it automatically — do NOT ask the user to select a range. (2) If no ERPPrices sheet exists, the user must select their ERP data range in Excel before you call this function. Confirm PO data has been extracted first."
+        },
+        "responding": {
+          "description": "Report the reconciliation summary clearly.",
+          "instructions": "Present total items, perfect matches, within tolerance, exceptions, and total exposure. Recommend generating a credit note and re-invoice if there are exceptions."
+        }
+      }
+    },
+    {
+      "name": "GenerateCreditNote",
+      "description": "Generates a credit note sheet for price exception lines only. Credits items at their original PO prices as negative amounts.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Confirmation with the credit note sheet name, number of lines, and total credit amount."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateCreditNote` creates a formatted Excel sheet crediting only exception lines at their original PO prices.",
+          "instructions": "Only run this after a reconciliation has been completed and exceptions were found."
+        },
+        "responding": {
+          "description": "Report the credit note details.",
+          "instructions": "Tell the user the credit note sheet name, total lines credited, and the total credit amount."
+        }
+      }
+    },
+    {
+      "name": "GenerateReInvoice",
+      "description": "Generates a corrected re-invoice sheet for exception lines only. Uses ERP prices for items that had price discrepancies.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Confirmation with the re-invoice sheet name, number of lines, total invoice amount, and count of price corrections."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateReInvoice` creates a formatted Excel sheet re-invoicing only exception lines at corrected ERP prices.",
+          "instructions": "Only run this after a reconciliation has been completed and exceptions were found."
+        },
+        "responding": {
+          "description": "Report the re-invoice details.",
+          "instructions": "Tell the user the re-invoice sheet name, total lines, corrected total, and how many prices were changed."
+        }
+      }
+    },
+    {
+      "name": "DraftExceptionEmail",
+      "description": "Generates an email draft summarizing the reconciliation exceptions. Returns the email subject and body text.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "The email subject and body text for the exception report."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`DraftExceptionEmail` creates a professional email draft listing the top pricing exceptions from the reconciliation.",
+          "instructions": "Only run this after a reconciliation has been completed."
+        },
+        "responding": {
+          "description": "Present the email draft.",
+          "instructions": "Show the email subject and body to the user."
+        }
+      }
+    },
+    {
+      "name": "GenerateERPStaging",
+      "description": "Generates an ERP-ready staging sheet from reconciliation results. Uses corrected ERP prices, color-codes rows by status (Ready/Review/Hold).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "customer": {
+            "type": "string",
+            "description": "Customer name for the staging sheet header.",
+            "default": ""
+          },
+          "deliveryDate": {
+            "type": "string",
+            "description": "Delivery date for the staging sheet header.",
+            "default": ""
+          }
+        },
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Summary of the staging sheet including line count, total value, and status breakdown."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateERPStaging` creates an ERP-ready staging sheet using corrected prices from the reconciliation.",
+          "instructions": "Only run this after a reconciliation has been completed. If the user mentions a customer name or delivery date, pass them as parameters."
+        },
+        "responding": {
+          "description": "Report the staging sheet details.",
+          "instructions": "Tell the user the total lines, total value, and the status breakdown (ready, review, hold)."
+        }
+      }
+    },
+    {
+      "name": "GenerateDashboard",
+      "description": "Generates a Price Intelligence Dashboard from accumulated reconciliation history. Shows metrics, top movers, and watch list.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Summary of price intelligence metrics, top movers, and watch list items."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GenerateDashboard` reads the PriceHistory sheet and writes a Dashboard sheet with leading indicators.",
+          "instructions": "This function needs at least one prior reconciliation to have data."
+        },
+        "responding": {
+          "description": "Present the price intelligence findings clearly.",
+          "instructions": "Highlight the key metrics: average price drift, exception rate, anomaly count. Call out top movers and watch list items."
+        }
+      }
+    },
+    {
+      "name": "GetPriceIntelligence",
+      "description": "Returns a conversational text report of price intelligence including trends, anomalies, top movers, watch list, and risk metrics.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "A formatted text report with summary metrics, trend breakdown, top movers, and watch list items."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`GetPriceIntelligence` reads accumulated price history and runs trend analysis and anomaly detection.",
+          "instructions": "Use this when the user asks about pricing trends, patterns, or anomalies. Unlike GenerateDashboard, this does NOT create a sheet."
+        },
+        "responding": {
+          "description": "Discuss the intelligence findings conversationally.",
+          "instructions": "Highlight the most important findings. Make specific recommendations based on the data."
+        }
+      }
+    },
+    {
+      "name": "LookupSKU",
+      "description": "Looks up a specific SKU price history across all reconciliation runs. Shows price timeline, trend direction, volatility, and risk flags.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "description": "The SKU or product code to look up. Supports partial matching."
+          }
+        },
+        "required": ["sku"]
+      },
+      "returns": {
+        "type": "string",
+        "description": "Complete price history, trend analysis, and risk flags for the requested SKU."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`LookupSKU` searches price history for a specific SKU and returns its complete pricing story.",
+          "instructions": "Use when the user asks about a specific SKU or product pricing history. Supports partial matching."
+        },
+        "responding": {
+          "description": "Present the SKU pricing story.",
+          "instructions": "Explain the price trend clearly. Highlight any anomalies or flags. If the price has changed significantly, quantify it."
+        }
+      }
+    },
+    {
+      "name": "AssessPORisk",
+      "description": "Provides a risk assessment of the current PO based on reconciliation results and historical price data. Returns an accept/review/escalate recommendation.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "returns": {
+        "type": "string",
+        "description": "Risk assessment with overview, top discrepancies, historical context, and recommendation."
+      },
+      "states": {
+        "reasoning": {
+          "description": "`AssessPORisk` analyzes reconciliation results against historical patterns to produce a risk-based recommendation.",
+          "instructions": "Run this after ReconcilePO to give the operator a clear recommendation."
+        },
+        "responding": {
+          "description": "Present the risk assessment as a clear recommendation.",
+          "instructions": "Lead with the recommendation (ACCEPT, REVIEW, or ESCALATE). Explain why with the key numbers."
+        }
+      }
+    }
+  ],
+  "runtimes": [
+    {
+      "type": "LocalPlugin",
+      "spec": {
+        "local_endpoint": "Microsoft.Office.Addin"
+      },
+      "run_for_functions": ["ExtractPOData", "ReconcilePO", "GenerateCreditNote", "GenerateReInvoice", "DraftExceptionEmail", "GenerateERPStaging", "GenerateDashboard", "GetPriceIntelligence", "LookupSKU", "AssessPORisk"],
+      "auth": {
+        "type": "None"
+      }
+    }
+  ]
+}
