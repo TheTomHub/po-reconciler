@@ -152,6 +152,18 @@ function initUI(browserMode) {
   els.applyErpColumns.addEventListener("click", () => applyManualColumns("erp"));
   els.dashboardBtn.addEventListener("click", handleDashboard);
 
+  // Copilot prompt copy buttons
+  document.querySelectorAll(".prompt-card").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const prompt = btn.dataset.prompt;
+      navigator.clipboard.writeText(prompt).then(() => {
+        const msg = document.getElementById("prompt-copied-msg");
+        msg.textContent = `Copied: "${prompt}"`;
+        setTimeout(() => { msg.textContent = ""; }, 2500);
+      });
+    });
+  });
+
   // Tab switching
   els.tabBtns.forEach((btn) => {
     btn.addEventListener("click", () => {

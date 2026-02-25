@@ -16,6 +16,7 @@
       <button class="tab active" data-tab="reconcile">Reconcile</button>
       <button class="tab" data-tab="actions" disabled title="Run reconciliation first">Actions</button>
       <button class="tab" data-tab="tools">Tools</button>
+      <button class="tab" data-tab="copilot">Copilot</button>
     </nav>
 
     <main>
@@ -267,6 +268,61 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Tab: Copilot Prompts -->
+      <div class="tab-panel" id="panel-copilot">
+        <p class="tab-hint">Click any prompt to copy it, then paste into the Copilot panel.</p>
+
+        <div class="prompt-group">
+          <p class="prompt-group-label">End to end</p>
+          <button class="prompt-card prompt-primary" data-prompt="Process this PO end to end">
+            <span class="prompt-text">Process this PO end to end</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+        </div>
+
+        <div class="prompt-group">
+          <p class="prompt-group-label">Step by step</p>
+          <button class="prompt-card" data-prompt="Extract PO data">
+            <span class="prompt-text">Extract PO data</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Reconcile PO">
+            <span class="prompt-text">Reconcile PO</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Generate credit note and re-invoice for exceptions">
+            <span class="prompt-text">Generate credit note and re-invoice for exceptions</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Generate ERP staging sheet">
+            <span class="prompt-text">Generate ERP staging sheet</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Draft exception email">
+            <span class="prompt-text">Draft exception email</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+        </div>
+
+        <div class="prompt-group">
+          <p class="prompt-group-label">Intelligence</p>
+          <button class="prompt-card" data-prompt="What are the price trends for this account?">
+            <span class="prompt-text">What are the price trends for this account?</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Which SKUs have recurring price exceptions?">
+            <span class="prompt-text">Which SKUs have recurring price exceptions?</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Assess the risk on this PO">
+            <span class="prompt-text">Assess the risk on this PO</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+        </div>
+
+        <p class="prompt-copied-msg" id="prompt-copied-msg"></p>
       </div>
 
       <!-- Error Display (visible on any tab) -->
