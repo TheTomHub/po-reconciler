@@ -279,6 +279,14 @@ async function handleExtractPOData(message) {
   const columns = detectAllColumns(parsedData.headers);
   const extraction = extractPOData(parsedData, columns);
 
+  // Use sheet name as fallback when no PO ref column was detected
+  if (extraction.metadata.poRef === "Unknown") {
+    extraction.metadata.poRef = agentState.poFilename || "PO";
+  }
+  if (extraction.metadata.customer === "Unknown") {
+    extraction.metadata.customer = "";
+  }
+
   // Write staging sheet
   await writeStagingSheet(extraction);
 
