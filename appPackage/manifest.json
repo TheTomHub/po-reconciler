@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
   "manifestVersion": "devPreview",
   "id": "424de98e-17e2-4fed-8115-791671162f90",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "name": {
     "short": "Chandlr",
     "full": "Chandlr — Order Processing Suite"
@@ -50,8 +50,8 @@
           "id": "CommandsRuntime",
           "type": "general",
           "code": {
-            "page": "https://thetomhub.github.io/po-reconciler/dist/commands.html",
-            "script": "https://thetomhub.github.io/po-reconciler/dist/commands.js"
+            "page": "https://thetomhub.github.io/po-reconciler/commands.html",
+            "script": "https://thetomhub.github.io/po-reconciler/commands.js"
           },
           "lifetime": "short",
           "actions": [
@@ -101,7 +101,7 @@
           "id": "TaskpaneRuntime",
           "type": "general",
           "code": {
-            "page": "https://thetomhub.github.io/po-reconciler/dist/taskpane.html"
+            "page": "https://thetomhub.github.io/po-reconciler/taskpane.html"
           },
           "lifetime": "long",
           "actions": [
@@ -125,9 +125,9 @@
                   "id": "CommandsGroup",
                   "label": "Order Processing",
                   "icons": [
-                    { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-16.png" },
-                    { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-32.png" },
-                    { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-64.png" }
+                    { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
+                    { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
+                    { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-64.png" }
                   ],
                   "controls": [
                     {
@@ -135,9 +135,9 @@
                       "type": "button",
                       "label": "Open Chandlr",
                       "icons": [
-                        { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-16.png" },
-                        { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-32.png" },
-                        { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/dist/assets/icon-64.png" }
+                        { "size": 16, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-16.png" },
+                        { "size": 32, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-32.png" },
+                        { "size": 80, "url": "https://thetomhub.github.io/po-reconciler/assets/icon-64.png" }
                       ],
                       "supertip": {
                         "title": "Open Chandlr",
