@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
   "manifestVersion": "devPreview",
   "id": "424de98e-17e2-4fed-8115-791671162f90",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "name": {
     "short": "Chandlr",
     "full": "Chandlr — Order Processing Suite"
@@ -50,8 +50,7 @@
           "id": "CommandsRuntime",
           "type": "general",
           "code": {
-            "page": "https://thetomhub.github.io/po-reconciler/commands.html",
-            "script": "https://thetomhub.github.io/po-reconciler/commands.js"
+            "page": "https://thetomhub.github.io/po-reconciler/commands.html"
           },
           "lifetime": "short",
           "actions": [
