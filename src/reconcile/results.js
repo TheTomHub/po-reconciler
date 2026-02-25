@@ -23,9 +23,9 @@ const TABLE_HEADERS = [
 /**
  * Write reconciliation results to a new Excel sheet.
  */
-export async function writeResultsSheet(results, tolerance) {
+export async function writeResultsSheet(results, tolerance, poRef) {
   await Excel.run(async (context) => {
-    const sheetName = getSheetName();
+    const sheetName = getSheetName(poRef);
 
     // Delete existing sheet with same name if present
     const existing = context.workbook.worksheets.getItemOrNullObject(sheetName);
@@ -135,10 +135,7 @@ export async function writeResultsSheet(results, tolerance) {
   });
 }
 
-function getSheetName() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `Recon_${y}-${m}-${d}`;
+function getSheetName(poRef) {
+  const clean = (poRef || "Recon").replace(/[\\/*?\[\]:]/g, "").trim().slice(0, 20);
+  return `Recon ${clean}`;
 }

@@ -152,7 +152,7 @@ export async function writeStagingSheet(extractionResult) {
 
     // ── Warnings Sheet (if warnings exist) ──
     if (warnings.length > 0) {
-      const warningSheetName = sheetName + "_Warnings";
+      const warningSheetName = sheetName + " Issues";
       const existingWarning = context.workbook.worksheets.getItemOrNullObject(warningSheetName);
       await context.sync();
       if (!existingWarning.isNullObject) {
@@ -182,6 +182,6 @@ export async function writeStagingSheet(extractionResult) {
 }
 
 function getStagingSheetName(poRef) {
-  const clean = (poRef || "PO").replace(/[^a-zA-Z0-9-_]/g, "").slice(0, 20);
-  return `Staging_${clean}`;
+  const clean = (poRef || "PO").replace(/[\\/*?\[\]:]/g, "").trim().slice(0, 20);
+  return `PO ${clean}`;
 }

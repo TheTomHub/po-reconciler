@@ -13,7 +13,7 @@ const HOLD_BG = "#FFC7CE";    // red
  */
 export async function writeEntrySheet(entryData) {
   await Excel.run(async (context) => {
-    const sheetName = getSheetName("ERPStaging");
+    const sheetName = getSheetName(entryData.metadata.poRef);
 
     const existing = context.workbook.worksheets.getItemOrNullObject(sheetName);
     await context.sync();
@@ -137,10 +137,7 @@ export async function writeEntrySheet(entryData) {
   });
 }
 
-function getSheetName(prefix) {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${prefix}_${y}-${m}-${d}`;
+function getSheetName(poRef) {
+  const clean = (poRef || "Entry").replace(/[\\/*?\[\]:]/g, "").trim().slice(0, 20);
+  return `ERP Entry ${clean}`;
 }

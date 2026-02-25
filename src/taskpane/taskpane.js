@@ -131,6 +131,9 @@ function initUI(browserMode) {
     predictExceptionRate: document.getElementById("predict-exception-rate"),
     predictAnomalies: document.getElementById("predict-anomalies"),
     predictTrendingUp: document.getElementById("predict-trending-up"),
+    // Settings panel
+    settingsBtn: document.getElementById("settings-btn"),
+    settingsPanel: document.getElementById("settings-panel"),
     // License section
     licenseKeyInput: document.getElementById("license-key-input"),
     licenseActivateBtn: document.getElementById("license-activate-btn"),
@@ -178,6 +181,11 @@ function initUI(browserMode) {
       if (btn.disabled) return;
       switchTab(btn.dataset.tab);
     });
+  });
+
+  // Settings panel toggle
+  els.settingsBtn.addEventListener("click", () => {
+    els.settingsPanel.hidden = !els.settingsPanel.hidden;
   });
 
   // License activation
@@ -306,7 +314,7 @@ async function handleSelectRange() {
   try {
     await Excel.run(async (context) => {
       const range = context.workbook.getSelectedRange();
-      range.load("values");
+      range.load(["values", "address"]);
       await context.sync();
 
       const values = range.values;
@@ -332,7 +340,8 @@ async function handleSelectRange() {
       } else {
         state.erpColumns = columns;
         els.manualColumnsErp.hidden = true;
-        setStatus(els.erpStatus, `${rows.length} rows loaded`, "success");
+        const colNames = headers.filter(Boolean).slice(0, 3).join(", ");
+        setStatus(els.erpStatus, `${range.address} — ${rows.length} rows | ${colNames}`, "success");
       }
       updateReconcileButton();
     });
@@ -443,7 +452,7 @@ async function handleReconcile() {
     if (state.browserMode) {
       renderBrowserResultsTable(results);
     } else {
-      await writeResultsSheet(results, state.tolerance);
+      await writeResultsSheet(results, state.tolerance, state.poFilename);
     }
 
     // Append to price history
@@ -533,6 +542,7 @@ async function handleExtract() {
       statusText += ` (${m.warningCount} extraction warnings)`;
     }
     setStatus(els.extractStatus, statusText, "success");
+    setStatus(els.erpStatus, "PO extracted. Now select your ERP data in the spreadsheet, then click Load.", "");
   } catch (err) {
     setStatus(els.extractStatus, "", "");
     showError(err.message);
@@ -769,10 +779,15 @@ function showNextSteps(context) {
     return;
   }
 
-  steps.forEach((s) => {
+  steps.forEach((s, i) => {
     const btn = document.createElement("button");
-    btn.className = "next-step-btn";
-    btn.innerHTML = `<span class="ns-arrow">&rsaquo;</span><span class="ns-label">${s.label}</span><span class="ns-detail">${s.detail}</span>`;
+    if (i === 0) {
+      btn.className = "next-steps-primary";
+      btn.innerHTML = `<span class="ns-label">${s.label}</span><span class="ns-detail">${s.detail}</span>`;
+    } else {
+      btn.className = "next-step-btn";
+      btn.innerHTML = `<span class="ns-arrow">&rsaquo;</span><span class="ns-label">${s.label}</span><span class="ns-detail">${s.detail}</span>`;
+    }
     btn.addEventListener("click", s.action);
     list.appendChild(btn);
   });

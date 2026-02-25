@@ -146,7 +146,7 @@ async function handleReconcilePO(message) {
   agentState.results = results;
 
   // Write results sheet
-  await writeResultsSheet(results, tolerance);
+  await writeResultsSheet(results, tolerance, agentState.poFilename);
 
   // Append to price history
   try {

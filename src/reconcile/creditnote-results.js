@@ -13,7 +13,7 @@ const CHANGED_BG = "#FFEB9C"; // yellow highlight for changed prices
  */
 export async function writeCreditNoteSheet(creditData, poFilename) {
   await Excel.run(async (context) => {
-    const sheetName = getSheetName("CreditNote");
+    const sheetName = getSheetName("Credit Note", poFilename);
 
     // Delete existing sheet with same name if present
     const existing = context.workbook.worksheets.getItemOrNullObject(sheetName);
@@ -121,7 +121,7 @@ export async function writeCreditNoteSheet(creditData, poFilename) {
  */
 export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCount) {
   await Excel.run(async (context) => {
-    const sheetName = getSheetName("ReInvoice");
+    const sheetName = getSheetName("Re-Invoice", poFilename);
 
     const existing = context.workbook.worksheets.getItemOrNullObject(sheetName);
     await context.sync();
@@ -209,10 +209,7 @@ export async function writeReInvoiceSheet(invoiceData, poFilename, exceptionCoun
   });
 }
 
-function getSheetName(prefix) {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${prefix}_${y}-${m}-${d}`;
+function getSheetName(prefix, poRef) {
+  const clean = (poRef || "").replace(/[\\/*?\[\]:]/g, "").trim().slice(0, 20);
+  return clean ? `${prefix} ${clean}` : prefix;
 }
