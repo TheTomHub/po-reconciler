@@ -15,6 +15,7 @@ import { writeEntrySheet } from "../entry/entry-results";
 import { toHistoryRecords, analyzeHistory, formatPredictReport } from "../predict/predict";
 import { appendHistory, readHistory } from "../predict/history";
 import { writeDashboard } from "../predict/dashboard";
+import { checkLicense, hasFeature, getLineLimit, getUpgradeMessage } from "../license/license";
 
 /**
  * Shared state for agent actions within a session.
@@ -26,6 +27,8 @@ const agentState = {
 };
 
 Office.onReady(() => {
+  // Warm the license cache non-blocking so first Copilot action doesn't wait.
+  checkLicense().catch(() => {});
   // Agent actions are registered below via Office.actions.associate
 });
 
@@ -40,6 +43,8 @@ async function handleReconcilePO(message) {
   const currency = params.currency ?? "GBP";
 
   setCurrency(currency);
+
+  await checkLicense();
 
   // Read ERP data — prefer ERPPrices sheet (from SharePoint), fall back to selected range
   let erpData, erpColumns, erpSource;
@@ -130,6 +135,12 @@ async function handleReconcilePO(message) {
     agentState.poFilename = sheet.name;
   });
 
+  // Enforce line limit for free tier
+  const lineLimit = getLineLimit();
+  if (lineLimit > 0 && poData.rows.length > lineLimit) {
+    return `Free plan limit: ReconcilePO supports up to ${lineLimit} lines. This PO has ${poData.rows.length} lines.\n\n${getUpgradeMessage("ReconcilePO")}`;
+  }
+
   // Run reconciliation
   const results = reconcile({ poData, poColumns, erpData, erpColumns, tolerance });
   agentState.results = results;
@@ -202,6 +213,8 @@ async function handleExtractPOData(message) {
 
   setCurrency(currency);
 
+  await checkLicense();
+
   // Read PO data from specified sheet or active sheet
   let parsedData;
   await Excel.run(async (context) => {
@@ -256,6 +269,12 @@ async function handleExtractPOData(message) {
     agentState.poFilename = sheet.name;
   });
 
+  // Enforce line limit for free tier
+  const lineLimit = getLineLimit();
+  if (lineLimit > 0 && parsedData.rows.length > lineLimit) {
+    return `Free plan limit: ExtractPOData supports up to ${lineLimit} lines. This PO has ${parsedData.rows.length} lines.\n\n${getUpgradeMessage("ExtractPOData")}`;
+  }
+
   // Detect columns and extract
   const columns = detectAllColumns(parsedData.headers);
   const extraction = extractPOData(parsedData, columns);
@@ -308,6 +327,11 @@ async function handleExtractPOData(message) {
 // ── GenerateERPStaging ──
 
 async function handleGenerateERPStaging(message) {
+  await checkLicense();
+  if (!hasFeature("GenerateERPStaging")) {
+    return getUpgradeMessage("GenerateERPStaging");
+  }
+
   if (!agentState.results) {
     return "No reconciliation results available. Please run ReconcilePO first.";
   }
@@ -340,6 +364,11 @@ async function handleGenerateERPStaging(message) {
 // ── GenerateDashboard ──
 
 async function handleGenerateDashboard() {
+  await checkLicense();
+  if (!hasFeature("GenerateDashboard")) {
+    return getUpgradeMessage("GenerateDashboard");
+  }
+
   const records = await readHistory();
 
   if (records.length === 0) {
@@ -385,6 +414,11 @@ async function handleGenerateDashboard() {
 // The agent can discuss trends, anomalies, and risks without writing a sheet.
 
 async function handleGetPriceIntelligence() {
+  await checkLicense();
+  if (!hasFeature("GetPriceIntelligence")) {
+    return getUpgradeMessage("GetPriceIntelligence");
+  }
+
   const records = await readHistory();
 
   if (records.length === 0) {
@@ -490,6 +524,11 @@ async function handleLookupSKU(message) {
 // and historical price data. Returns accept/review/escalate recommendation.
 
 async function handleAssessPORisk() {
+  await checkLicense();
+  if (!hasFeature("AssessPORisk")) {
+    return getUpgradeMessage("AssessPORisk");
+  }
+
   if (!agentState.results) {
     return "No reconciliation results available. Please run ReconcilePO first.";
   }

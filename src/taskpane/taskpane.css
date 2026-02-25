@@ -746,3 +746,72 @@ select {
   text-align: center;
   margin-top: 4px;
 }
+
+/* ── License section ── */
+.license-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #edebe9;
+}
+
+.license-tier-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tier-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tier-badge.tier-free {
+  background: #f3f2f1;
+  color: #605e5c;
+  border: 1px solid #c8c6c4;
+}
+
+.tier-badge.tier-pro {
+  background: #dce9f5;
+  color: #1f4e79;
+  border: 1px solid #1f4e79;
+}
+
+.tier-badge.tier-enterprise {
+  background: #fdf3dc;
+  color: #7a5a00;
+  border: 1px solid #c8960c;
+}
+
+.upgrade-link {
+  font-size: 12px;
+  color: #1f4e79;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.upgrade-link:hover {
+  text-decoration: underline;
+}
+
+.license-key-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.license-key-row input[type="text"] {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid #8a8886;
+  border-radius: 3px;
+  font-size: 12px;
+}

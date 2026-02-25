@@ -15,6 +15,7 @@ import { writeEntrySheet } from "../entry/entry-results";
 import { toHistoryRecords, analyzeHistory, formatPredictReport } from "../predict/predict";
 import { appendHistory, readHistory, getHistorySummary } from "../predict/history";
 import { writeDashboard } from "../predict/dashboard";
+import { checkLicense, hasFeature, getTier, saveLicenseKey, UPGRADE_URL } from "../license/license";
 
 /* global Office, Excel */
 
@@ -130,6 +131,13 @@ function initUI(browserMode) {
     predictExceptionRate: document.getElementById("predict-exception-rate"),
     predictAnomalies: document.getElementById("predict-anomalies"),
     predictTrendingUp: document.getElementById("predict-trending-up"),
+    // License section
+    licenseKeyInput: document.getElementById("license-key-input"),
+    licenseActivateBtn: document.getElementById("license-activate-btn"),
+    licenseStatus: document.getElementById("license-status"),
+    licenseTierBadge: document.getElementById("license-tier-badge"),
+    licenseKeyRow: document.getElementById("license-key-row"),
+    licenseUpgradeLink: document.getElementById("license-upgrade-link"),
   };
 
   // Event listeners
@@ -172,6 +180,13 @@ function initUI(browserMode) {
     });
   });
 
+  // License activation
+  els.licenseActivateBtn.addEventListener("click", handleActivateLicense);
+  els.licenseUpgradeLink.href = UPGRADE_URL;
+
+  // Check license on load — updates badge and gates UI
+  checkLicense().then(() => applyLicenseUI()).catch(() => applyLicenseUI());
+
   // Check for existing price history on load
   if (!browserMode) {
     refreshHistorySummary();
@@ -191,6 +206,64 @@ function switchTab(tabName) {
 
   // Clear notification dot when visiting the tab
   if (btn) btn.classList.remove("tab-notify");
+}
+
+// --- License ---
+
+function applyLicenseUI() {
+  const tier = getTier();
+
+  // Update tier badge
+  const badge = els.licenseTierBadge;
+  if (badge) {
+    badge.textContent = tier.charAt(0).toUpperCase() + tier.slice(1);
+    badge.className = `tier-badge tier-${tier}`;
+  }
+
+  // Hide key row if licensed (pro/enterprise), show if free
+  if (els.licenseKeyRow) {
+    els.licenseKeyRow.hidden = tier !== "free";
+  }
+
+  // Hide upgrade link if already on a paid tier
+  if (els.licenseUpgradeLink) {
+    els.licenseUpgradeLink.hidden = tier !== "free";
+  }
+
+  // Gate dashboard button in taskpane (Pro feature)
+  if (els.dashboardBtn) {
+    if (!hasFeature("GenerateDashboard")) {
+      els.dashboardBtn.disabled = true;
+      els.dashboardBtn.title = "Pro feature — upgrade to unlock";
+    }
+  }
+}
+
+async function handleActivateLicense() {
+  const key = (els.licenseKeyInput?.value || "").trim();
+  if (!key) {
+    setStatus(els.licenseStatus, "Enter a license key first.", "error");
+    return;
+  }
+
+  els.licenseActivateBtn.disabled = true;
+  setStatus(els.licenseStatus, "Checking...", "");
+
+  saveLicenseKey(key);
+  try {
+    await checkLicense();
+    const tier = getTier();
+    if (tier === "free") {
+      setStatus(els.licenseStatus, "Key not recognized — still on Free.", "error");
+    } else {
+      setStatus(els.licenseStatus, `Activated! ${tier.charAt(0).toUpperCase() + tier.slice(1)} plan unlocked.`, "success");
+    }
+    applyLicenseUI();
+  } catch {
+    setStatus(els.licenseStatus, "Could not verify key — try again.", "error");
+  } finally {
+    els.licenseActivateBtn.disabled = false;
+  }
 }
 
 // --- File Upload ---
