@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.3/schema.json",
   "schema_version": "v2.3",
   "name_for_human": "Chandlr",
-  "description_for_human": "Order processing made simple",
+  "description_for_human": "Reconciles purchase orders against ERP pricing, generates credit notes and re-invoices, and produces exception emails and ERP staging sheets directly in Excel.",
   "description_for_model": "Plugin for purchase order processing in Excel. ALWAYS use these functions for PO extraction, price reconciliation, credit notes, re-invoicing, exception emails, ERP staging, risk assessment, and price intelligence. Never attempt these operations manually or with code interpreter. These functions read and write Excel sheets directly.",
   "namespace": "addinfunction",
   "functions": [
@@ -31,12 +31,12 @@
       },
       "states": {
         "reasoning": {
-          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types, normalizes the data, and writes a standardized staging sheet.",
-          "instructions": "Before running, confirm the user has PO data open in a sheet. If they mention a specific sheet name, pass it as the sheetName parameter."
+          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types, normalizes the data, and writes a standardized staging sheet. It handles most formats automatically including sparse layouts and non-header rows.",
+          "instructions": "If the user mentions a specific sheet name, pass it as the sheetName parameter. Do not attempt to pre-clean or reformat the data — ExtractPOData handles this internally. If the function returns an error, stop and display it; common fixes are passing the correct sheetName or ensuring the sheet contains tabular data."
         },
         "responding": {
           "description": "Report the extraction results clearly.",
-          "instructions": "Present: PO reference, customer name, line count, total value, which fields were detected, and any warnings. Suggest running ReconcilePO next if they have ERP data."
+          "instructions": "Present: PO reference, customer name, line count, total value, detected fields, and any warnings. Then say: 'I'll now search SharePoint for [customer name]'s price list — proceeding to Step 1.5.'"
         }
       }
     },
@@ -70,7 +70,7 @@
         },
         "responding": {
           "description": "Report the reconciliation summary clearly.",
-          "instructions": "Present total items, perfect matches, within tolerance, exceptions, and total exposure. Recommend generating a credit note and re-invoice if there are exceptions."
+          "instructions": "Present total items, perfect matches, within tolerance, exceptions, and total exposure. If exceptions > 0: present the AssessPORisk recommendation and say 'Say Generate outputs to create the credit note and re-invoice.' If exceptions = 0: confirm all prices match and say 'Generating ERP staging sheet now.'"
         }
       }
     },
@@ -93,7 +93,7 @@
         },
         "responding": {
           "description": "Report the credit note details.",
-          "instructions": "Tell the user the credit note sheet name, total lines credited, and the total credit amount."
+          "instructions": "Tell the user the credit note sheet name, total lines credited, and total credit amount. Then say: 'Generating the re-invoice now.'"
         }
       }
     },
@@ -116,7 +116,7 @@
         },
         "responding": {
           "description": "Report the re-invoice details.",
-          "instructions": "Tell the user the re-invoice sheet name, total lines, corrected total, and how many prices were changed."
+          "instructions": "Tell the user the re-invoice sheet name, total lines, corrected total, and price correction count. Then say: 'Say Email and staging to draft the exception email and create the ERP staging sheet.'"
         }
       }
     },
@@ -139,7 +139,7 @@
         },
         "responding": {
           "description": "Present the email draft.",
-          "instructions": "Show the email subject and body to the user."
+          "instructions": "Show the email subject and body to the user. Then say: 'Generating the ERP staging sheet now.'"
         }
       }
     },
@@ -173,7 +173,7 @@
         },
         "responding": {
           "description": "Report the staging sheet details.",
-          "instructions": "Tell the user the total lines, total value, and the status breakdown (ready, review, hold)."
+          "instructions": "Tell the user the total lines, total value, and status breakdown (ready/review/hold). Then present a brief summary of all outputs generated this session: which sheets were created and what action is needed for each."
         }
       }
     },
@@ -270,7 +270,7 @@
         },
         "responding": {
           "description": "Present the risk assessment as a clear recommendation.",
-          "instructions": "Lead with the recommendation (ACCEPT, REVIEW, or ESCALATE). Explain why with the key numbers."
+          "instructions": "Lead with the recommendation (ACCEPT / REVIEW / ESCALATE) and explain with the key numbers. If ACCEPT: say 'All clear — generating ERP staging sheet now.' If REVIEW or ESCALATE: say 'Say Generate outputs to create the credit note and re-invoice.'"
         }
       }
     }

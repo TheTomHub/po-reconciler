@@ -758,7 +758,13 @@ select {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #a19f9d;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.prompt-group-hint {
+  font-size: 11px;
+  color: #797775;
+  margin-bottom: 8px;
 }
 
 .prompt-card {

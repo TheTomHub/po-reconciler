@@ -283,7 +283,8 @@
 
         <div class="prompt-group">
           <p class="prompt-group-label">End to end</p>
-          <button class="prompt-card prompt-primary" data-prompt="Process this PO end to end">
+          <p class="prompt-group-hint">Start here — PO must be open in the active sheet.</p>
+          <button class="prompt-card prompt-primary" data-prompt="My PO is in the active sheet — process it end to end: extract, find the price list on SharePoint, reconcile, and assess risk.">
             <span class="prompt-text">Process this PO end to end</span>
             <span class="prompt-copy-icon">⧉</span>
           </button>
@@ -291,6 +292,7 @@
 
         <div class="prompt-group">
           <p class="prompt-group-label">Step by step</p>
+          <p class="prompt-group-hint">Run in order. Reconcile before generating outputs.</p>
           <button class="prompt-card" data-prompt="Extract PO data">
             <span class="prompt-text">Extract PO data</span>
             <span class="prompt-copy-icon">⧉</span>
@@ -315,6 +317,7 @@
 
         <div class="prompt-group">
           <p class="prompt-group-label">Intelligence</p>
+          <p class="prompt-group-hint">Query pricing history any time — no active PO needed.</p>
           <button class="prompt-card" data-prompt="What are the price trends for this account?">
             <span class="prompt-text">What are the price trends for this account?</span>
             <span class="prompt-copy-icon">⧉</span>
@@ -325,6 +328,10 @@
           </button>
           <button class="prompt-card" data-prompt="Assess the risk on this PO">
             <span class="prompt-text">Assess the risk on this PO</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Generate a price intelligence dashboard from my reconciliation history.">
+            <span class="prompt-text">Generate a price intelligence dashboard</span>
             <span class="prompt-copy-icon">⧉</span>
           </button>
         </div>
