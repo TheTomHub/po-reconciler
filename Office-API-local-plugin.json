@@ -70,7 +70,7 @@
         },
         "responding": {
           "description": "Report the reconciliation summary clearly.",
-          "instructions": "Present total items, perfect matches, within tolerance, exceptions, and total exposure. If exceptions > 0: present the AssessPORisk recommendation and say 'Say Generate outputs to create the credit note and re-invoice.' If exceptions = 0: confirm all prices match and say 'Generating ERP staging sheet now.'"
+          "instructions": "Present total items, perfect matches, within tolerance, exceptions, and total exposure. If exceptions > 0: say 'Running risk assessment now.' — the workflow will immediately call AssessPORisk, whose responding instructions will present the recommendation and next step. Do not present a risk level or recommendation yourself. If exceptions = 0: confirm all prices match and say 'Generating ERP staging sheet now.'"
         }
       }
     },
