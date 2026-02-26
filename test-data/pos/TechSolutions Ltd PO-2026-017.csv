@@ -1,0 +1,25 @@
+PURCHASE ORDER,,,,,,
+,,,,,,
+Supplier:,Your Company Ltd,,,,,
+Address:,Unit 4 Industrial Estate,,,,,
+,Birmingham B1 2AB,,,,,
+,,,,,,
+Bill To:,TechSolutions Ltd,,,,,
+Address:,55 Innovation Park,,,,,
+,Manchester M1 7FX,,,,,
+,,,,,,
+PO Reference:,PO-2026-017,,,,,
+Issue Date:,26/02/2026,,,,,
+Required By:,20/03/2026,,,,,
+Currency:,GBP,,,,,
+,,,,,,
+Line,SKU,Description,Quantity,Price Each,Unit,Total
+1,1001,Widget A,20,5.20,EA,104.00
+2,1002,Widget B,50,3.20,EA,160.00
+3,1003,Gadget C,10,13.50,EA,135.00
+4,1004,Part D,200,0.85,EA,170.00
+5,1005,Assembly E,15,20.00,EA,300.00
+,,,,,,
+,,Order Total:,,,,869.00
+,,,,,,
+Approved:,R. Patel,,,Date:,26/02/2026

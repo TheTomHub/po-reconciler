@@ -1,0 +1,26 @@
+PURCHASE ORDER,,,,,,
+,,,,,,
+Supplier:,Your Company Ltd,,,,,
+Address:,Unit 4 Industrial Estate,,,,,
+,Birmingham B1 2AB,,,,,
+,,,,,,
+Bill To:,Acme Corp,,,,,
+Address:,10 Commerce Way,,,,,
+,London EC1A 1BB,,,,,
+,,,,,,
+PO Number:,PO-2026-041,,,,,
+PO Date:,26/02/2026,,,,,
+Delivery Date:,15/03/2026,,,,,
+Payment Terms:,30 days net,,,,,
+,,,,,,
+#,SKU,Product Name,Qty,Unit Price,UOM,Line Total
+1,1001,Widget A,10,5.50,EA,55.00
+2,1002,Widget B,25,3.20,EA,80.00
+3,1003,Gadget C,5,12.75,EA,63.75
+4,1004,Part D,100,0.85,EA,85.00
+5,1005,Assembly E,8,22.00,EA,176.00
+,,,,,,
+,,Total:,,,,459.75
+,,,,,,
+Authorised by:,J. Smith,,,,,
+Date:,26/02/2026,,,,,
