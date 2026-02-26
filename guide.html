@@ -16,7 +16,7 @@
 
     /* Header */
     .hero {
-      background: linear-gradient(135deg, #1f4e79 0%, #2d6fa0 100%);
+      background: linear-gradient(135deg, #0d1b2a 0%, #1b3a5c 100%);
       color: #fff;
       padding: 48px 24px;
       text-align: center;
@@ -129,28 +129,74 @@
       color: #fff;
       border-color: #2b7a4b;
     }
-    .mockup-status {
-      font-size: 12px;
-      color: #107c10;
+    .mockup-status { font-size: 12px; color: #107c10; }
+    .mockup-label { font-size: 12px; color: #605e5c; }
+
+    /* Teams chat mockup */
+    .teams-mockup {
+      background: #fff;
+      border: 1px solid #d2d0ce;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 16px 0;
     }
-    .mockup-label {
-      font-size: 12px;
-      color: #605e5c;
+    .teams-header {
+      background: #6264a7;
+      color: #fff;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+    .teams-header-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .teams-body { padding: 12px 16px; }
+    .teams-msg {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .teams-msg.user { flex-direction: row-reverse; }
+    .teams-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #1f4e79; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .teams-avatar.bot {
+      background: linear-gradient(135deg, #6264a7, #a6a7df);
+    }
+    .teams-bubble {
+      max-width: 80%;
+      background: #f0f0f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #323130;
+      line-height: 1.5;
+    }
+    .teams-msg.user .teams-bubble {
+      background: #6264a7;
+      color: #fff;
+    }
+    .teams-bubble strong { display: block; font-size: 11px; color: #605e5c; margin-bottom: 3px; }
+    .teams-msg.user .teams-bubble strong { color: rgba(255,255,255,0.7); }
 
     /* Result cards mockup */
     .results-mock {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin: 8px 0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; margin: 8px 0;
     }
     .result-card-mock {
-      padding: 6px 10px;
-      border: 1px solid #edebe9;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 12px;
+      padding: 6px 10px; border: 1px solid #edebe9;
+      border-radius: 4px; text-align: center; font-size: 12px;
     }
     .result-card-mock .val { font-size: 18px; font-weight: 700; color: #323130; display: block; }
     .result-card-mock .lbl { font-size: 10px; color: #605e5c; text-transform: uppercase; }
@@ -170,89 +216,85 @@
 
     /* Callout boxes */
     .callout {
-      padding: 12px 16px;
-      border-radius: 6px;
-      margin: 16px 0;
-      font-size: 14px;
+      padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px;
     }
-    .callout.tip {
-      background: #dff6dd;
-      border-left: 4px solid #107c10;
-    }
-    .callout.warning {
-      background: #fff4ce;
-      border-left: 4px solid #ffb900;
-    }
-    .callout.info {
-      background: #e5f1fb;
-      border-left: 4px solid #1f4e79;
-    }
+    .callout.tip { background: #dff6dd; border-left: 4px solid #107c10; }
+    .callout.warning { background: #fff4ce; border-left: 4px solid #ffb900; }
+    .callout.info { background: #e5f1fb; border-left: 4px solid #1f4e79; }
+    .callout.teams { background: #f0effb; border-left: 4px solid #6264a7; }
     .callout strong { display: block; margin-bottom: 4px; }
 
     /* TOC */
-    .toc {
-      background: #f0f4f8;
-      padding: 20px 24px;
-      border-radius: 6px;
-      margin: 16px 0;
-    }
+    .toc { background: #f0f4f8; padding: 20px 24px; border-radius: 6px; margin: 16px 0; }
     .toc h3 { margin: 0 0 8px; font-size: 14px; color: #1f4e79; }
     .toc ol { padding-left: 20px; }
     .toc li { margin-bottom: 4px; }
     .toc a { color: #1f4e79; text-decoration: none; font-size: 14px; }
     .toc a:hover { text-decoration: underline; }
 
+    /* Surface cards in guide */
+    .surface-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px; margin: 16px 0;
+    }
+    .surface-card {
+      border: 1px solid #edebe9; border-radius: 8px; padding: 16px;
+    }
+    .surface-card.primary { border-color: #1f4e79; border-width: 2px; }
+    .surface-card-icon { font-size: 22px; margin-bottom: 8px; }
+    .surface-card h4 { font-size: 14px; font-weight: 700; color: #1f4e79; margin-bottom: 4px; }
+    .surface-card .badge {
+      display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .badge-live { background: #dff6dd; color: #2b7a4b; }
+    .badge-soon { background: #f0f0f0; color: #797775; }
+    .surface-card p { font-size: 12px; color: #605e5c; }
+
     /* Pipeline diagram */
     .pipeline {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin: 16px 0;
+      display: flex; align-items: center; justify-content: center;
+      gap: 4px; flex-wrap: wrap; margin: 16px 0;
     }
     .pipeline-step {
-      padding: 8px 14px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      color: #fff;
+      padding: 8px 14px; border-radius: 4px;
+      font-size: 13px; font-weight: 600; text-align: center; color: #fff;
     }
     .pipeline-step.blue { background: #1f4e79; }
     .pipeline-step.green { background: #2b7a4b; }
+    .pipeline-step.purple { background: #6264a7; }
     .pipeline-arrow { font-size: 18px; color: #8a8886; }
 
     /* Footer */
     .footer {
-      text-align: center;
-      padding: 32px 24px;
-      font-size: 13px;
-      color: #797775;
+      text-align: center; padding: 32px 24px;
+      font-size: 13px; color: #797775;
     }
 
     /* Requirements list */
     .req-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 12px 0;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin: 12px 0;
     }
     .req-card {
-      padding: 12px;
-      background: #f8f8f8;
-      border-radius: 6px;
-      border: 1px solid #edebe9;
+      padding: 12px; background: #f8f8f8;
+      border-radius: 6px; border: 1px solid #edebe9;
     }
     .req-card strong { font-size: 13px; display: block; margin-bottom: 4px; color: #1f4e79; }
     .req-card span { font-size: 13px; color: #605e5c; }
+
+    @media (max-width: 600px) {
+      .surface-grid { grid-template-columns: 1fr; }
+      .req-grid { grid-template-columns: 1fr; }
+      .results-mock { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 
 <div class="hero">
   <h1>Chandlr</h1>
-  <p>Order processing made simple. Extract, validate, reconcile, resolve, enter &mdash; all inside Excel.</p>
+  <p>AI order processing across web, Teams, and Excel. Extract, reconcile, resolve &mdash; in a single prompt.</p>
 </div>
 
 <div class="container">
@@ -262,9 +304,10 @@
     <div class="toc">
       <h3>Quick Navigation</h3>
       <ol>
-        <li><a href="#requirements">Requirements</a></li>
-        <li><a href="#install">Installation (2 minutes)</a></li>
-        <li><a href="#workflow">The Workflow</a></li>
+        <li><a href="#surfaces">Three ways to use Chandlr</a></li>
+        <li><a href="#teams">Teams Agent workflow</a></li>
+        <li><a href="#excel-install">Excel Add-in: Installation</a></li>
+        <li><a href="#workflow">Excel Add-in: The workflow</a></li>
         <li><a href="#step1">Step 1: Upload a PO</a></li>
         <li><a href="#step2">Step 2: Extract &amp; Validate</a></li>
         <li><a href="#step3">Step 3: Load ERP Data</a></li>
@@ -272,53 +315,180 @@
         <li><a href="#step5">Step 5: Review Results</a></li>
         <li><a href="#step6">Step 6: Take Action</a></li>
         <li><a href="#step7">Step 7: Generate ERP Staging</a></li>
-        <li><a href="#copilot">Using the Copilot Agent</a></li>
+        <li><a href="#copilot">Using Copilot in Excel</a></li>
         <li><a href="#tips">Tips &amp; Troubleshooting</a></li>
       </ol>
     </div>
   </div>
 
-  <!-- Requirements -->
-  <div class="section" id="requirements">
-    <h2>Requirements</h2>
-    <div class="req-grid">
-      <div class="req-card">
-        <strong>Microsoft Excel</strong>
-        <span>Desktop (Windows/Mac) or Excel for the Web</span>
+  <!-- Three surfaces -->
+  <div class="section" id="surfaces">
+    <h2>Three ways to use Chandlr</h2>
+    <p>Chandlr runs across three surfaces. All share the same backend and intelligence layer &mdash; choose the one that fits your workflow.</p>
+
+    <div class="surface-grid">
+      <div class="surface-card soon">
+        <div class="surface-card-icon">🌐</div>
+        <h4>Web App</h4>
+        <span class="badge badge-soon">Coming soon</span>
+        <p>Upload a PO and price list in a browser. Get reconciliation results, credit notes, and ERP staging without Excel or Teams.</p>
       </div>
-      <div class="req-card">
-        <strong>Your PO file</strong>
-        <span>CSV, Excel (.xlsx), or PDF</span>
+      <div class="surface-card">
+        <div class="surface-card-icon">💬</div>
+        <h4>Teams Agent</h4>
+        <span class="badge badge-soon">Requires M365 Copilot</span>
+        <p>Chat to Chandlr in Teams. Attach a PO and say "process this" — it fetches your price list from SharePoint and runs the full workflow.</p>
       </div>
-      <div class="req-card">
-        <strong>ERP price list</strong>
-        <span>Stored in SharePoint (fetched automatically by Copilot agent) or paste into a sheet manually</span>
+      <div class="surface-card primary">
+        <div class="surface-card-icon">📊</div>
+        <h4>Excel Add-in</h4>
+        <span class="badge badge-live">Free &mdash; live now</span>
+        <p>Runs inside your workbook. Task pane buttons or Copilot chat. Outputs written directly as sheets. Nothing sent externally.</p>
       </div>
-      <div class="req-card">
-        <strong>Internet connection</strong>
-        <span>The add-in loads from the web</span>
-      </div>
+    </div>
+
+    <div class="callout info">
+      <strong>Same pipeline, any surface</strong>
+      Extract &rarr; Validate &rarr; Reconcile &rarr; Resolve &rarr; Stage &rarr; Predict. Whether you use the web app, Teams, or Excel, every reconciliation feeds the shared price intelligence layer.
     </div>
   </div>
 
-  <!-- Installation -->
-  <div class="section" id="install">
-    <h2>Installation (2 minutes)</h2>
-    <p>Chandlr is an Excel add-in. You install it once, then it appears in your ribbon.</p>
+  <!-- Teams Agent -->
+  <div class="section" id="teams">
+    <h2>Teams Agent workflow</h2>
+    <p>If your organisation has Microsoft 365 Copilot, you can process POs entirely inside a Teams chat. No Excel, no file browsing &mdash; just attach and prompt.</p>
+
+    <div class="callout teams">
+      <strong>Requirements</strong>
+      Microsoft 365 Copilot licence (or pay-as-you-go Copilot billing). The Chandlr app must be installed by your Teams admin.
+    </div>
+
+    <div class="pipeline" style="margin-bottom:8px;">
+      <span class="pipeline-step purple">Attach PO</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step purple">Prompt Chandlr</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step purple">SharePoint fetch</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step purple">Reconcile</span>
+      <span class="pipeline-arrow">&rarr;</span>
+      <span class="pipeline-step purple">Outputs in chat</span>
+    </div>
+
+    <h3>Step by step</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <strong>Open Chandlr in Teams</strong>
+        <p>Find Chandlr in the sidebar under "Apps". If it's not there, search for it in the Teams app store or ask your admin to install it.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <strong>Attach the PO and say "Process this PO end to end"</strong>
+        <p>Click the paperclip icon in the chat input, attach the PO file (PDF, CSV, or Excel), and send the prompt. Chandlr accepts any format &mdash; it handles company headers, merged cells, and non-standard layouts automatically.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Chandlr extracts the PO and searches SharePoint</strong>
+        <p>It reads the customer name from the PO, searches your SharePoint and OneDrive for the latest matching price list, and confirms the file with you before proceeding.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <strong>Review the reconciliation results and risk assessment</strong>
+        <p>Chandlr returns a summary: total lines, matches, exceptions, and total exposure. It then automatically runs a risk assessment and recommends <b>ACCEPT</b>, <b>REVIEW</b>, or <b>ESCALATE</b>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <strong>Say "Generate outputs" if exceptions exist</strong>
+        <p>Chandlr generates a credit note and re-invoice for the exception lines only.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-content">
+        <strong>Say "Email and staging" to finalise</strong>
+        <p>Chandlr drafts the exception email and generates an ERP-ready staging sheet. A summary of all outputs is presented at the end.</p>
+      </div>
+    </div>
+
+    <h3>Example conversation</h3>
+
+    <div class="teams-mockup">
+      <div class="teams-header">
+        <div class="teams-header-icon">C</div>
+        Chandlr &mdash; Teams Agent
+      </div>
+      <div class="teams-body">
+        <div class="teams-msg user">
+          <div class="teams-avatar">KZ</div>
+          <div class="teams-bubble">
+            <strong>You &mdash; 09:41</strong>
+            Process this PO end to end [Acme Corp PO-2026-041.csv]
+          </div>
+        </div>
+        <div class="teams-msg">
+          <div class="teams-avatar bot">C</div>
+          <div class="teams-bubble">
+            <strong>Chandlr &mdash; 09:41</strong>
+            Extracted PO-2026-041 — Acme Corp, 5 lines, £459.75. Searching SharePoint for Acme Corp price list... Found "Acme Corp Price List.csv" (last modified 24 Feb 2026). Shall I use this file?
+          </div>
+        </div>
+        <div class="teams-msg user">
+          <div class="teams-avatar">KZ</div>
+          <div class="teams-bubble">
+            <strong>You &mdash; 09:42</strong>
+            Yes
+          </div>
+        </div>
+        <div class="teams-msg">
+          <div class="teams-avatar bot">C</div>
+          <div class="teams-bubble">
+            <strong>Chandlr &mdash; 09:42</strong>
+            Reconciliation complete. 5 items: 3 matches, 1 within tolerance, 1 exception (Part D £0.85 vs ERP £0.90, £7.50 exposure). Risk: <b>ACCEPT</b> — single minor exception, within historical range. Generating ERP staging sheet now.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Prompts you can use</h3>
+    <table class="mini-table">
+      <tr><th style="width:40%">Prompt</th><th>What happens</th></tr>
+      <tr style="background:#f0effb"><td><b>"Process this PO end to end"</b></td><td>Full pipeline: extract, SharePoint lookup, reconcile, risk assess &mdash; one message</td></tr>
+      <tr><td>"Generate outputs"</td><td>Credit note + re-invoice for exception lines</td></tr>
+      <tr><td>"Email and staging"</td><td>Exception email draft + ERP staging sheet</td></tr>
+      <tr><td>"Assess this PO"</td><td>ACCEPT / REVIEW / ESCALATE recommendation with rationale</td></tr>
+      <tr><td>"What's the price history for SKU 1046?"</td><td>Full price timeline, trend, and risk flags for that SKU</td></tr>
+      <tr><td>"Show me pricing trends and anomalies"</td><td>Conversational intelligence from your reconciliation history</td></tr>
+    </table>
+  </div>
+
+  <!-- Excel Install -->
+  <div class="section" id="excel-install">
+    <h2>Excel Add-in: Installation</h2>
+    <p>Chandlr is a free Excel add-in. You install it once, then it appears in your ribbon.</p>
 
     <h3>Option A: Excel Desktop (Windows/Mac)</h3>
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-content">
         <strong>Open Excel and go to Insert &rarr; Office Add-ins</strong>
-        <p>In the ribbon at the top, click the <b>Insert</b> tab, then click <b>Office Add-ins</b> (or "Get Add-ins").</p>
+        <p>In the ribbon at the top, click <b>Insert</b>, then <b>Office Add-ins</b> (or "Get Add-ins").</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
         <strong>Click "Upload My Add-in"</strong>
-        <p>In the dialog, click <b>Upload My Add-in</b> in the top-right corner. If prompted, choose <b>Browse</b>.</p>
+        <p>In the dialog, click <b>Upload My Add-in</b> (top-right). If prompted, choose <b>Browse</b>.</p>
       </div>
     </div>
     <div class="step">
@@ -332,7 +502,7 @@
       <div class="step-num">4</div>
       <div class="step-content">
         <strong>Find "Chandlr" in the ribbon</strong>
-        <p>A new <b>Chandlr</b> tab appears in the ribbon. Click <b>Open Chandlr</b> to launch the task pane.</p>
+        <p>A new <b>Chandlr</b> tab appears. Click <b>Open Chandlr</b> to launch the task pane.</p>
       </div>
     </div>
 
@@ -353,14 +523,14 @@
       <div class="step-num">2</div>
       <div class="step-content">
         <strong>Insert &rarr; Office Add-ins &rarr; Upload My Add-in</strong>
-        <p>Same steps as desktop. Upload the <a href="manifest.xml" download>manifest.xml</a> file.</p>
+        <p>Same steps as desktop. Upload <a href="manifest.xml" download>manifest.xml</a>.</p>
       </div>
     </div>
   </div>
 
   <!-- The Workflow -->
   <div class="section" id="workflow">
-    <h2>The Workflow</h2>
+    <h2>Excel Add-in: The Workflow</h2>
     <p>Chandlr takes you through a linear pipeline. Each step feeds into the next:</p>
     <div class="pipeline">
       <span class="pipeline-step blue">Upload PO</span>
@@ -375,7 +545,7 @@
       <span class="pipeline-arrow">&rarr;</span>
       <span class="pipeline-step green">ERP Staging</span>
     </div>
-    <p>The task pane has four tabs: <b>Reconcile</b>, <b>Actions</b>, <b>Tools</b>, and <b>Copilot</b>. The Copilot tab shows suggested prompts — click any prompt to copy it, then paste it into the Copilot panel. With the Copilot agent, the entire pipeline runs from a single prompt; the agent fetches your price list from SharePoint automatically so you skip Step 3. See <a href="#copilot">Using the Copilot Agent</a>.</p>
+    <p>The task pane has four tabs: <b>Reconcile</b>, <b>Actions</b>, <b>Tools</b>, and <b>Prompts</b>. The Prompts tab shows suggested Copilot prompts &mdash; click any to copy it, then paste into the Copilot panel. With the Copilot agent active in Excel, the entire pipeline runs from a single prompt and the price list is fetched from SharePoint automatically (skip Step 3). See <a href="#copilot">Using Copilot in Excel</a>.</p>
   </div>
 
   <!-- Step 1: Upload PO -->
@@ -400,7 +570,7 @@
       </div>
     </div>
 
-    <p>Chandlr auto-detects your columns (SKU, price, quantity, description, etc.). If it can't, you'll see dropdown menus to select them manually.</p>
+    <p>Chandlr auto-detects your columns (SKU, price, quantity, description, etc.) and handles company header rows, blank rows, and merged cells. If detection fails, you'll see dropdown menus to select columns manually.</p>
 
     <div class="callout info">
       <strong>Zendesk / HTML POs</strong>
@@ -415,8 +585,8 @@
     <ol>
       <li>Read every line item from the PO</li>
       <li>Normalize SKUs, prices, quantities, and descriptions</li>
-      <li>Write a clean "Staging" sheet in your workbook</li>
-      <li>Run validation checks on the data</li>
+      <li>Write a clean "PO &lt;ref&gt;" sheet in your workbook</li>
+      <li>Run 9 validation checks on the data</li>
     </ol>
 
     <div class="mockup">
@@ -441,7 +611,7 @@
 
     <div class="callout tip">
       <strong>Check the staging sheet</strong>
-      Switch to the new "Staging" sheet tab in your workbook. Rows highlighted yellow have warnings &mdash; hover over them to see details in the cell notes.
+      Switch to the new "PO &lt;ref&gt;" sheet in your workbook. Rows highlighted yellow have warnings &mdash; hover to see details in the cell notes.
     </div>
   </div>
 
@@ -450,8 +620,8 @@
     <h2>Step 3: Load ERP Data</h2>
 
     <div class="callout tip">
-      <strong>Using the Copilot agent? Skip this step.</strong>
-      After extraction, the agent automatically searches SharePoint for the latest price list matching the account name and writes it to a sheet called <b>ERPPrices</b> in your workbook. Reconciliation then runs against that sheet &mdash; no manual selection needed.
+      <strong>Using the Copilot agent in Excel? Skip this step.</strong>
+      After extraction, the agent automatically searches SharePoint for the latest price list matching the account name and writes it to an <b>ERPPrices</b> sheet. Reconciliation then runs against that sheet &mdash; no manual selection needed.
     </div>
 
     <p>If you are using the task pane (button mode), load your ERP price list manually:</p>
@@ -467,34 +637,20 @@
       <div class="step-num">B</div>
       <div class="step-content">
         <strong>Select the entire ERP data range</strong>
-        <p>Click the top-left cell of your ERP data and drag to select <b>all rows and columns, including the header row</b>.</p>
+        <p>Click the top-left cell and drag to select <b>all rows and columns, including the header row</b>.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">C</div>
       <div class="step-content">
         <strong>Click "Load Selection" in Chandlr</strong>
-        <p>Back in the task pane, click the <b>Load Selection</b> button under step 2.</p>
-      </div>
-    </div>
-
-    <div class="mockup">
-      <div class="mockup-header">After loading ERP data</div>
-      <div class="mockup-body">
-        <div style="font-weight:600; margin-bottom:8px;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#1f4e79;color:#fff;font-size:11px;margin-right:6px;">2</span>
-          Select ERP Data
-        </div>
-        <div class="mockup-row">
-          <span class="mockup-btn">Load Selection</span>
-          <span class="mockup-status">52 rows loaded</span>
-        </div>
+        <p>Back in the task pane, click <b>Load Selection</b> under step 2. You'll see the range address and detected column names.</p>
       </div>
     </div>
 
     <div class="callout warning">
       <strong>Important: select the header row too</strong>
-      Your selection must include the header row (SKU, Price, Description, etc.). Chandlr uses the headers to auto-detect which column is which.
+      Your selection must include the header row. Chandlr uses the headers to auto-detect which column is which.
     </div>
   </div>
 
@@ -518,8 +674,8 @@
       </div>
     </div>
 
-    <p><b>Tolerance</b> means: price differences smaller than this value are considered OK. Default is &pound;0.02 (2p).</p>
-    <p>Chandlr compares every SKU on the PO against the ERP price list and writes a color-coded <b>Recon</b> sheet.</p>
+    <p><b>Tolerance</b>: price differences smaller than this value are considered OK. Default is &pound;0.02 (2p).</p>
+    <p>Chandlr compares every SKU on the PO against the ERP price list and writes a color-coded <b>Recon &lt;ref&gt;</b> sheet.</p>
   </div>
 
   <!-- Step 5: Review Results -->
@@ -534,16 +690,16 @@
       <div class="result-card-mock exception"><span class="val">11</span><span class="lbl">Exceptions</span></div>
     </div>
 
-    <p>A new <b>Recon</b> sheet is created in your workbook with full details. Rows are color-coded:</p>
+    <p>A new <b>Recon &lt;ref&gt;</b> sheet is created. Rows are color-coded:</p>
     <table class="mini-table">
       <tr><th>Colour</th><th>Status</th><th>Meaning</th></tr>
       <tr class="row-green"><td>Green</td><td>Match</td><td>PO price = ERP price</td></tr>
-      <tr style="background:#FFEB9C"><td>Yellow</td><td>Tolerance</td><td>Difference is within tolerance (e.g. &pound;0.01)</td></tr>
+      <tr style="background:#FFEB9C"><td>Yellow</td><td>Tolerance</td><td>Difference within tolerance (e.g. &pound;0.01)</td></tr>
       <tr style="background:#FFC7CE"><td>Red</td><td>Exception</td><td>Price mismatch needs review</td></tr>
       <tr style="background:#F2F2F2"><td>Grey</td><td>Not in ERP / Warning</td><td>SKU not found or data issue</td></tr>
     </table>
 
-    <p>The <b>Actions</b> tab also becomes active (look for the notification dot).</p>
+    <p>The <b>Actions</b> tab becomes active (look for the notification dot).</p>
   </div>
 
   <!-- Step 6: Take Action -->
@@ -564,16 +720,16 @@
     </div>
 
     <h3>Draft Exception Email</h3>
-    <p>Creates an email draft summarizing the top pricing exceptions. You can copy the text or open it directly in your email client.</p>
+    <p>Creates an email draft summarizing the top pricing exceptions. Copy the text or open it directly in your email client.</p>
 
     <h3>Generate Credit Note</h3>
-    <p>Creates a <b>CreditNote</b> sheet crediting <b>exception lines only</b> at their original PO prices (as negative amounts). Lines that matched or were within tolerance are not included.</p>
+    <p>Creates a <b>Credit Note &lt;ref&gt;</b> sheet crediting <b>exception lines only</b> at their original PO prices (as negative amounts).</p>
 
     <h3>Generate Re-Invoice</h3>
-    <p>Creates a <b>ReInvoice</b> sheet re-invoicing <b>exception lines only</b> at corrected ERP prices. Rows where the price changed are highlighted yellow.</p>
+    <p>Creates a <b>Re-Invoice &lt;ref&gt;</b> sheet re-invoicing <b>exception lines only</b> at corrected ERP prices. Rows where the price changed are highlighted yellow.</p>
 
     <div class="callout info">
-      <strong>Credit Note + Re-Invoice buttons only appear when there are exceptions.</strong>
+      <strong>Credit Note + Re-Invoice only appear when there are exceptions.</strong>
       If all prices match, you don't need them.
     </div>
   </div>
@@ -581,19 +737,17 @@
   <!-- Step 7: ERP Staging -->
   <div class="section" id="step7">
     <h2>Step 7: Generate ERP Staging</h2>
-    <p>Click <b>Generate ERP Staging</b> to create a clean sheet ready for ERP entry. This is the final output &mdash; the data you'll enter into SAP, Oracle, D365, or whatever system you use.</p>
-
-    <p>The staging sheet uses the <b>corrected ERP prices</b> (not the original PO prices) and color-codes each row:</p>
+    <p>Click <b>Generate ERP Staging</b> to create a clean sheet ready for ERP entry. Uses corrected ERP prices and color-codes each row:</p>
 
     <table class="mini-table">
       <tr><th>Colour</th><th>Status</th><th>What to do</th></tr>
       <tr class="row-green"><td>Green</td><td>Ready</td><td>Price verified. Enter into ERP as-is.</td></tr>
-      <tr class="row-yellow"><td>Yellow</td><td>Review</td><td>Price exception. Confirm the correct price, then enter.</td></tr>
+      <tr class="row-yellow"><td>Yellow</td><td>Review</td><td>Price exception. Confirm correct price, then enter.</td></tr>
       <tr class="row-red"><td>Red</td><td>Hold</td><td>SKU not found in ERP or data issue. Do not enter &mdash; investigate first.</td></tr>
     </table>
 
     <div class="mockup">
-      <div class="mockup-header">ERPStaging sheet (example)</div>
+      <div class="mockup-header">ERP Entry &lt;ref&gt; sheet (example)</div>
       <div class="mockup-body" style="padding:0;overflow-x:auto;">
         <table class="mini-table" style="margin:0;">
           <tr><th>Line</th><th>SKU</th><th>Description</th><th>Qty</th><th>Price</th><th>Total</th><th>Status</th></tr>
@@ -608,21 +762,21 @@
     <div class="callout tip">
       <strong>How to enter into ERP</strong>
       <ul style="margin-top:6px;padding-left:16px;">
-        <li>Copy the green rows directly into your ERP import tool (DataLoad, LSMW, etc.)</li>
-        <li>Review yellow rows with your buyer/manager, then update the price and enter</li>
+        <li>Copy green rows directly into your ERP import tool (DataLoad, LSMW, etc.)</li>
+        <li>Review yellow rows with your buyer/manager, update the price, then enter</li>
         <li>Red rows need the SKU verified in ERP before entry</li>
       </ul>
     </div>
   </div>
 
-  <!-- Copilot Agent -->
+  <!-- Copilot in Excel -->
   <div class="section" id="copilot">
-    <h2>Using the Copilot Agent</h2>
-    <p>If your organisation has Microsoft 365 Copilot, Chandlr works as a Copilot agent &mdash; you can do everything by typing natural language instead of clicking buttons.</p>
+    <h2>Using Copilot in Excel</h2>
+    <p>If your organisation has Microsoft 365 Copilot, Chandlr registers as a Copilot agent inside Excel. The entire pipeline runs from a single prompt &mdash; the agent fetches your price list from SharePoint, so you skip Step 3.</p>
 
     <div class="callout info">
       <strong>Requirements</strong>
-      Microsoft 365 Copilot license (or pay-as-you-go billing enabled). The agent uses SharePoint to find price lists automatically.
+      Microsoft 365 Copilot licence. The Chandlr app must be installed via the Teams Admin Center.
     </div>
 
     <h3>Getting started</h3>
@@ -630,82 +784,61 @@
       <div class="step-num">1</div>
       <div class="step-content">
         <strong>Open the Copilot panel in Excel</strong>
-        <p>Click the <b>Copilot</b> button in the ribbon (top-right). Look for <b>Chandlr</b> in the agent list.</p>
+        <p>Click the <b>Copilot</b> button in the ribbon (top-right). Find <b>Chandlr</b> in the agent list.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-content">
-        <strong>Use the conversation starters or type freely</strong>
-        <p>Chandlr understands natural requests about PO processing. Try the examples below.</p>
+        <strong>Open your PO in the active sheet</strong>
+        <p>The PO data should be visible in the current workbook. Chandlr handles any format &mdash; you don't need to reformat it first.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <strong>Say "Process this PO end to end"</strong>
+        <p>Chandlr extracts the PO, searches SharePoint for the price list, reconciles every line, and gives you a risk recommendation &mdash; all from one prompt.</p>
       </div>
     </div>
 
     <h3>What you can say</h3>
     <table class="mini-table">
       <tr><th style="width:40%">Prompt</th><th>What happens</th></tr>
-      <tr style="background:#f0f7ff"><td><b>"Process this PO end to end"</b></td><td>Extracts PO data, fetches the latest price list from SharePoint automatically, reconciles every line, and gives a risk recommendation &mdash; one prompt, no manual steps</td></tr>
-      <tr><td>"Extract the order data from this PO"</td><td>Reads the active sheet, auto-detects columns, creates a clean staging sheet</td></tr>
-      <tr><td>"Generate outputs"</td><td>Generates credit note and re-invoice for exception lines</td></tr>
-      <tr><td>"Email + staging"</td><td>Drafts the exception email and creates the ERP staging sheet</td></tr>
-      <tr><td>"Create an ERP-ready staging sheet"</td><td>Generates color-coded sheet: green (enter), yellow (review), red (hold)</td></tr>
-      <tr><td>"Draft an email about the pricing discrepancies"</td><td>Writes a professional exception email you can send to your team</td></tr>
-      <tr><td>"Show me price trends from my reconciliation history"</td><td>Analyses all past reconciliations and creates a Price Intelligence Dashboard</td></tr>
-      <tr style="background:#f0f7ff"><td>"Assess this PO &mdash; should I accept or escalate?"</td><td>Analyses reconciliation results against historical patterns and gives a clear <b>ACCEPT / REVIEW / ESCALATE</b> recommendation</td></tr>
-      <tr style="background:#f0f7ff"><td>"What's the price history for SKU 1046?"</td><td>Looks up a specific SKU&rsquo;s full price timeline, trend, volatility, and risk flags</td></tr>
-      <tr style="background:#f0f7ff"><td>"What pricing trends and anomalies do you see?"</td><td>Conversational intelligence &mdash; discusses patterns without creating a sheet</td></tr>
+      <tr style="background:#f0effb"><td><b>"Process this PO end to end"</b></td><td>Full pipeline: extract, SharePoint fetch, reconcile, risk assess &mdash; one prompt</td></tr>
+      <tr><td>"Generate outputs"</td><td>Credit note + re-invoice for exception lines</td></tr>
+      <tr><td>"Email and staging"</td><td>Exception email draft + ERP staging sheet</td></tr>
+      <tr><td>"Assess this PO"</td><td>ACCEPT / REVIEW / ESCALATE recommendation</td></tr>
+      <tr><td>"What's the price history for SKU 1046?"</td><td>Full price timeline, trend, and risk flags</td></tr>
+      <tr><td>"Show me pricing trends and anomalies"</td><td>Conversational intelligence from reconciliation history</td></tr>
+      <tr><td>"Generate a price dashboard"</td><td>Creates a Price Intelligence Dashboard sheet</td></tr>
     </table>
 
     <h3>SharePoint integration</h3>
-    <p>Chandlr has access to your team's SharePoint and OneDrive. After extracting a PO, the agent automatically:</p>
+    <p>Chandlr has access to your team's SharePoint and OneDrive. After extracting a PO it automatically:</p>
     <ol>
-      <li>Reads the customer/account name from the PO</li>
+      <li>Reads the customer name from the PO</li>
       <li>Searches SharePoint for the latest price list file matching that account</li>
-      <li>Writes the price data into a sheet called <b>ERPPrices</b> in your workbook</li>
-      <li>Runs reconciliation against that sheet &mdash; no manual selection needed</li>
+      <li>Asks you to confirm the file before writing it</li>
+      <li>Writes the price data to an <b>ERPPrices</b> sheet and runs reconciliation against it</li>
     </ol>
-    <p>This means:</p>
-    <ul>
-      <li><b>No manual copy-paste</b> &mdash; the agent finds and loads the latest price list automatically</li>
-      <li><b>Always up-to-date</b> &mdash; if your team updates the price list, the agent uses the latest version</li>
-      <li><b>Works with existing workflows</b> &mdash; no need to change where you store files</li>
-    </ul>
 
     <div class="callout tip">
       <strong>Tip: be specific if needed</strong>
-      The agent searches by account name automatically. If you have multiple price lists for the same account (e.g. by brand), tell the agent: "Use the Hydroflask price list" to narrow it down.
-    </div>
-
-    <h3>Price Intelligence (the AI moat)</h3>
-    <p>Every reconciliation builds a price history. The Copilot agent analyses this history to surface insights you'd otherwise miss:</p>
-    <ul>
-      <li><b>Risk assessment</b> &mdash; after reconciliation, the agent automatically assesses whether a PO should be accepted, reviewed, or escalated. It factors in exception rate, exposure, and historical patterns.</li>
-      <li><b>SKU lookup</b> &mdash; ask about any product and get its full price timeline, trend direction (up/down/stable), volatility, and risk flags.</li>
-      <li><b>Anomaly detection</b> &mdash; prices that fall outside their historical range are flagged automatically. No manual analysis needed.</li>
-      <li><b>Watch list</b> &mdash; SKUs with recurring issues (frequent exceptions, large changes, high volatility) are tracked and highlighted.</li>
-      <li><b>Conversational analysis</b> &mdash; unlike a static dashboard, you can ask follow-up questions: "Why is SKU 1046 on the watch list?" or "Which supplier has the most anomalies?"</li>
-    </ul>
-
-    <div class="callout tip">
-      <strong>The more you reconcile, the smarter it gets.</strong>
-      Each reconciliation adds data points. After 3&ndash;5 runs, you'll start seeing meaningful trends and the risk assessments become more accurate.
+      The agent searches by account name automatically. If you have multiple price lists (e.g. by brand), say "Use the Hydroflask price list" to narrow it down.
     </div>
 
     <h3>Copilot vs. task pane</h3>
-    <p>Both paths produce the same output sheets. Choose whichever fits your workflow:</p>
     <table class="mini-table">
       <tr><th>Feature</th><th>Task Pane (buttons)</th><th>Copilot Agent (chat)</th></tr>
       <tr><td>Full end-to-end pipeline</td><td>Click through each step</td><td>"Process this PO end to end"</td></tr>
-      <tr><td>Upload / extract PO</td><td>Click &amp; browse</td><td>"Extract the PO from this sheet"</td></tr>
-      <tr><td>Load ERP data</td><td>Select range &amp; click Load</td><td>Auto-fetched from SharePoint (writes to ERPPrices sheet)</td></tr>
-      <tr><td>Reconcile</td><td>Click Reconcile</td><td>Runs automatically after SharePoint fetch</td></tr>
+      <tr><td>Load ERP data</td><td>Select range &amp; click Load</td><td>Auto-fetched from SharePoint</td></tr>
       <tr><td>Credit note + re-invoice</td><td>Click each button</td><td>"Generate outputs"</td></tr>
-      <tr><td>ERP staging + email</td><td>Click each button</td><td>"Email + staging"</td></tr>
-      <tr><td>Price trends dashboard</td><td>Tools tab &rarr; Dashboard</td><td>"Show me price trends"</td></tr>
-      <tr><td>Risk assessment</td><td>&mdash;</td><td>"Assess this PO &mdash; accept or escalate?"</td></tr>
+      <tr><td>ERP staging + email</td><td>Click each button</td><td>"Email and staging"</td></tr>
+      <tr><td>Risk assessment</td><td>&mdash;</td><td>Runs automatically</td></tr>
       <tr><td>SKU lookup</td><td>&mdash;</td><td>"What's the history for SKU 1046?"</td></tr>
       <tr><td>Conversational analysis</td><td>&mdash;</td><td>"What anomalies do you see?"</td></tr>
-      <tr><td>Requires Copilot license</td><td>No</td><td>Yes</td></tr>
+      <tr><td>Requires Copilot licence</td><td>No</td><td>Yes</td></tr>
     </table>
   </div>
 
@@ -714,36 +847,39 @@
     <h2>Tips &amp; Troubleshooting</h2>
 
     <h3>Column detection isn't working</h3>
-    <p>If Chandlr can't auto-detect your columns, it shows dropdowns. Make sure your header row uses recognizable names like "SKU", "Price", "Qty", "Description", etc. Rename ambiguous headers if needed.</p>
+    <p>If Chandlr can't auto-detect your columns, it shows dropdowns. You can also open the Chandlr task pane and use the manual column selector in Step 1. You do not need to reformat or restructure your spreadsheet.</p>
 
     <h3>ERP data won't load</h3>
-    <p>If using the <b>Copilot agent</b>: ERP data is loaded automatically from SharePoint &mdash; no selection needed. If the agent can't find a matching price list, it will tell you and ask you to select the data range manually.</p>
-    <p>If using the <b>task pane</b>: make sure you've <b>selected</b> the data range in Excel before clicking "Load Selection". The selection must include the header row.</p>
+    <p>If using the <b>Copilot agent</b>: ERP data is loaded automatically from SharePoint. If the agent can't find a matching price list, it will tell you and ask you to select the range manually.</p>
+    <p>If using the <b>task pane</b>: make sure you've <b>selected</b> the data range in Excel (including the header row) before clicking "Load Selection".</p>
 
     <h3>SKUs don't match between PO and ERP</h3>
     <p>Chandlr handles common mismatches automatically:</p>
     <ul>
-      <li><b>Prefix matching</b>: PO SKU "1046" will match ERP SKU "1046V001"</li>
+      <li><b>Prefix matching</b>: PO SKU "1046" matches ERP SKU "1046V001"</li>
       <li><b>Case-insensitive</b>: "abc123" matches "ABC123"</li>
       <li><b>Whitespace</b>: Leading/trailing spaces are trimmed</li>
     </ul>
     <p>If a SKU still shows "Not in ERP", it likely needs to be set up in your ERP system.</p>
 
     <h3>The task pane is empty or shows an error</h3>
-    <p>Try: close the task pane (X), then reopen it from the Chandlr ribbon tab. If it still looks blank, hard-refresh the Excel Online tab (Cmd+Shift+R on Mac). If that doesn't work, remove and re-add the add-in via Insert → Add-ins → Admin-managed.</p>
+    <p>Try: close the task pane (X) and reopen from the Chandlr ribbon tab. If still blank, hard-refresh (Cmd+Shift+R on Mac / Ctrl+Shift+R on Windows). If that doesn't help, remove and re-add the add-in via Insert &rarr; Add-ins.</p>
 
     <h3>Changing the tolerance</h3>
-    <p>Adjust the tolerance value (in the Settings section) before running reconciliation. For example, set it to 0.05 if you're OK with up to 5p difference.</p>
+    <p>Open the Settings panel (gear icon in the task pane header) and adjust the tolerance value before running reconciliation. For example, 0.05 allows up to 5p difference.</p>
 
     <h3>Changing the currency</h3>
-    <p>Use the currency dropdown (GBP/USD/EUR) in Settings. This affects formatting only &mdash; it doesn't convert values.</p>
+    <p>Use the currency dropdown (GBP/USD/EUR) in the Settings panel. This affects formatting only &mdash; it doesn't convert values.</p>
+
+    <h3>The price intelligence is empty</h3>
+    <p>The intelligence layer needs at least one completed reconciliation to have data. After 3&ndash;5 runs you'll start seeing meaningful trends and the ACCEPT/REVIEW/ESCALATE recommendations become more accurate.</p>
   </div>
 
 </div>
 
 <div class="footer">
-  Chandlr &mdash; Order processing made simple.<br>
-  Questions? Contact your Chandlr administrator.
+  Chandlr &mdash; AI order processing across web, Teams, and Excel.<br>
+  Questions? <a href="mailto:hello@chandlr.com" style="color:#1f4e79;">hello@chandlr.com</a>
 </div>
 
 </body>

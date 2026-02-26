@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chandlr — AI-Powered Order Processing Inside Excel</title>
-  <meta name="description" content="Excel add-in and Copilot agent for PO reconciliation, credit notes, re-invoicing, ERP staging, and price intelligence. Works with any ERP.">
+  <title>Chandlr — AI Order Processing Platform</title>
+  <meta name="description" content="Chandlr is your AI order operator. Reconcile purchase orders against ERP pricing, generate credit notes and re-invoices, and produce ERP staging — across web, Teams, and Excel.">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -53,15 +53,11 @@
     .btn-blue:hover { background: #264f7a; }
 
     /* Hero product mockup */
-    .hero-visual {
-      position: relative;
-      align-self: end;
-    }
+    .hero-visual { position: relative; align-self: end; }
     .mockup-excel {
       background: #fff; border-radius: 8px 8px 0 0;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
-      overflow: hidden;
-      transform: translateY(2px);
+      overflow: hidden; transform: translateY(2px);
     }
     .mockup-toolbar {
       background: #217346; color: #fff;
@@ -73,9 +69,7 @@
       background: #f3f2f1; display: flex; font-size: 11px;
       border-bottom: 1px solid #e1dfdd;
     }
-    .mockup-tab {
-      padding: 5px 14px; color: #605e5c;
-    }
+    .mockup-tab { padding: 5px 14px; color: #605e5c; }
     .mockup-tab.active {
       background: #fff; color: #1b3a5c; font-weight: 600;
       border-bottom: 2px solid #1b3a5c;
@@ -118,15 +112,95 @@
     .copilot-msg { color: #605e5c; line-height: 1.4; }
     .copilot-msg em { color: #323130; font-style: normal; font-weight: 500; }
 
-    /* ── Intelligence layer (right under hero) ── */
+    /* ── Architecture diagram ── */
+    .arch {
+      background: #060f1a;
+      color: #fff;
+      padding: 64px 24px;
+    }
+    .arch .section-label { color: #7eb8da; text-align: center; }
+    .arch > .container > h2 {
+      text-align: center; font-size: 28px; margin-bottom: 8px;
+    }
+    .arch > .container > .sub {
+      text-align: center; font-size: 15px; color: rgba(255,255,255,0.55);
+      max-width: 560px; margin: 0 auto 48px;
+    }
+    .arch-diagram {
+      display: flex; flex-direction: column; align-items: center;
+      max-width: 720px; margin: 0 auto;
+    }
+    .arch-api {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 12px; padding: 28px 36px;
+      width: 100%; max-width: 500px; text-align: center;
+    }
+    .arch-api-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .arch-api-subtitle {
+      font-size: 12px; color: rgba(255,255,255,0.45);
+      margin-bottom: 18px;
+    }
+    .arch-api-chips {
+      display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+    }
+    .arch-api-chip {
+      background: rgba(126,184,218,0.12);
+      border: 1px solid rgba(126,184,218,0.3);
+      border-radius: 4px; padding: 3px 10px;
+      font-size: 12px; color: #7eb8da;
+    }
+    /* Connector lines */
+    .arch-connector {
+      position: relative; width: 100%; max-width: 500px; height: 52px;
+    }
+    .arch-connector-vline {
+      position: absolute; left: 50%; top: 0;
+      width: 1px; height: 26px;
+      background: rgba(255,255,255,0.25);
+    }
+    .arch-connector-hline {
+      position: absolute; top: 26px; left: 14%; right: 14%;
+      height: 1px; background: rgba(255,255,255,0.25);
+    }
+    .arch-connector-vl { position: absolute; top: 26px; left: 14%; width: 1px; height: 26px; background: rgba(255,255,255,0.25); }
+    .arch-connector-vc { position: absolute; top: 26px; left: 50%; width: 1px; height: 26px; background: rgba(255,255,255,0.25); }
+    .arch-connector-vr { position: absolute; top: 26px; right: 14%; width: 1px; height: 26px; background: rgba(255,255,255,0.25); }
+    /* Surfaces */
+    .arch-surfaces {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; width: 100%; max-width: 680px;
+    }
+    .arch-surface {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 10px; padding: 22px 16px; text-align: center;
+    }
+    .arch-surface.primary {
+      border-color: rgba(126,184,218,0.45);
+      background: rgba(126,184,218,0.09);
+    }
+    .arch-surface.free-tier { opacity: 0.65; }
+    .arch-surface-icon { font-size: 26px; margin-bottom: 10px; display: block; }
+    .arch-surface-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .arch-surface-tag {
+      display: inline-block;
+      font-size: 11px; padding: 2px 9px; border-radius: 10px;
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.55);
+      margin-bottom: 10px;
+    }
+    .arch-surface.primary .arch-surface-tag {
+      background: rgba(126,184,218,0.2); color: #7eb8da;
+    }
+    .arch-surface p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+    /* ── Intelligence layer (the moat) ── */
     .intel {
       background: #0d1b2a; color: #fff;
       padding: 56px 24px;
     }
     .intel .section-label { color: #7eb8da; text-align: center; }
-    .intel h2 {
-      text-align: center; font-size: 30px; margin-bottom: 8px;
-    }
+    .intel h2 { text-align: center; font-size: 30px; margin-bottom: 8px; }
     .intel .sub {
       text-align: center; font-size: 15px; opacity: 0.6;
       max-width: 600px; margin: 0 auto 40px;
@@ -142,9 +216,7 @@
     }
     .intel-item h3 { font-size: 15px; color: #7eb8da; margin-bottom: 6px; }
     .intel-item p { font-size: 13px; opacity: 0.8; line-height: 1.5; }
-    .intel-prompts {
-      margin-top: 10px; display: flex; flex-direction: column; gap: 4px;
-    }
+    .intel-prompts { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
     .intel-prompt {
       background: rgba(255,255,255,0.05); border-radius: 4px;
       padding: 5px 8px; font-size: 11px; color: rgba(255,255,255,0.6);
@@ -152,27 +224,21 @@
     }
 
     /* ── How it works (pipeline) ── */
-    .pipeline {
-      padding: 56px 24px; background: #fff;
-    }
+    .pipeline { padding: 56px 24px; background: #fff; }
     .pipeline .section-label { color: #1b3a5c; text-align: center; }
     .pipeline h2 {
-      text-align: center; font-size: 28px; color: #1b3a5c;
-      margin-bottom: 36px;
+      text-align: center; font-size: 28px; color: #1b3a5c; margin-bottom: 36px;
     }
     .pipe-steps {
       display: grid; grid-template-columns: repeat(6, 1fr);
-      gap: 0; max-width: 960px; margin: 0 auto;
-      position: relative;
+      gap: 0; max-width: 960px; margin: 0 auto; position: relative;
     }
     .pipe-steps::before {
       content: ""; position: absolute;
       top: 24px; left: 40px; right: 40px;
       height: 2px; background: #d6e4f0;
     }
-    .pipe-step {
-      text-align: center; position: relative; z-index: 1;
-    }
+    .pipe-step { text-align: center; position: relative; z-index: 1; }
     .pipe-dot {
       width: 48px; height: 48px; border-radius: 50%;
       background: #1b3a5c; color: #fff;
@@ -184,13 +250,10 @@
     .pipe-step p { font-size: 11px; color: #797775; padding: 0 4px; }
 
     /* ── Features ── */
-    .features {
-      padding: 56px 24px; background: #f8f8f8;
-    }
+    .features { padding: 56px 24px; background: #f8f8f8; }
     .features .section-label { color: #1b3a5c; text-align: center; }
     .features h2 {
-      text-align: center; font-size: 28px; color: #1b3a5c;
-      margin-bottom: 36px;
+      text-align: center; font-size: 28px; color: #1b3a5c; margin-bottom: 36px;
     }
     .feat-grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
@@ -203,32 +266,44 @@
     .feat h3 { font-size: 14px; color: #1b3a5c; margin-bottom: 4px; }
     .feat p { font-size: 13px; color: #605e5c; line-height: 1.5; }
 
-    /* ── Install ── */
-    .install {
+    /* ── 3 ways to use ── */
+    .surfaces {
       padding: 56px 24px; background: #fff;
     }
-    .install .section-label { color: #1b3a5c; text-align: center; }
-    .install h2 {
-      text-align: center; font-size: 28px; color: #1b3a5c;
-      margin-bottom: 32px;
+    .surfaces .section-label { color: #1b3a5c; text-align: center; }
+    .surfaces h2 {
+      text-align: center; font-size: 28px; color: #1b3a5c; margin-bottom: 8px;
     }
-    .install-steps {
-      display: flex; gap: 20px; justify-content: center;
-      max-width: 800px; margin: 0 auto;
-      flex-wrap: wrap;
+    .surfaces > .container > .sub {
+      text-align: center; font-size: 15px; color: #605e5c;
+      max-width: 520px; margin: 0 auto 40px;
     }
-    .install-step {
-      flex: 1; min-width: 160px; max-width: 200px;
-      text-align: center; padding: 16px;
+    .surface-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 20px; max-width: 960px; margin: 0 auto;
     }
-    .install-num {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: #1b3a5c; color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; margin: 0 auto 8px; font-size: 14px;
+    .surface-card {
+      border: 1px solid #edebe9; border-radius: 10px; padding: 28px 22px;
     }
-    .install-step strong { font-size: 13px; display: block; margin-bottom: 2px; }
-    .install-step p { font-size: 12px; color: #797775; margin: 0; }
+    .surface-card.primary { border-color: #1b3a5c; border-width: 2px; }
+    .surface-card.soon { opacity: 0.8; }
+    .surface-badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 2px 10px; border-radius: 10px; margin-bottom: 12px;
+    }
+    .badge-primary { background: #e8f0f8; color: #1b3a5c; }
+    .badge-soon { background: #f0f0f0; color: #797775; }
+    .badge-free { background: #dff6dd; color: #2b7a4b; }
+    .surface-card h3 { font-size: 18px; font-weight: 700; color: #1b3a5c; margin-bottom: 8px; }
+    .surface-card .surface-desc { font-size: 14px; color: #605e5c; line-height: 1.6; margin-bottom: 16px; }
+    .surface-card .surface-steps { list-style: none; padding: 0; }
+    .surface-card .surface-steps li {
+      font-size: 13px; color: #605e5c; padding: 4px 0;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .surface-card .surface-steps li::before {
+      content: "→"; color: #1b3a5c; font-weight: 700; flex-shrink: 0;
+    }
 
     /* ── CTA ── */
     .cta {
@@ -238,14 +313,12 @@
     .cta h2 { font-size: 28px; margin-bottom: 8px; }
     .cta p { font-size: 15px; opacity: 0.8; max-width: 480px; margin: 0 auto 24px; }
     .cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .cta .privacy {
-      margin-top: 16px; font-size: 12px; opacity: 0.5;
-    }
+    .cta .privacy { margin-top: 16px; font-size: 12px; opacity: 0.5; }
 
     /* ── Footer ── */
     .footer {
-      padding: 32px 24px;
-      text-align: center; font-size: 12px; color: #a19f9d;
+      padding: 32px 24px; text-align: center;
+      font-size: 12px; color: #a19f9d;
       border-top: 1px solid #edebe9;
     }
     .footer a { color: #605e5c; text-decoration: none; }
@@ -259,10 +332,12 @@
       .hero-visual { display: none; }
       .hero h1 { font-size: 30px; }
       .intel-cols { grid-template-columns: 1fr; }
+      .arch-surfaces { grid-template-columns: 1fr; }
+      .arch-connector { display: none; }
       .pipe-steps { grid-template-columns: repeat(3, 1fr); gap: 16px; }
       .pipe-steps::before { display: none; }
       .feat-grid { grid-template-columns: 1fr; }
-      .install-steps { flex-direction: column; align-items: center; }
+      .surface-cards { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -272,12 +347,12 @@
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <div class="section-label">Excel Add-in + Copilot Agent</div>
-      <h1>PO reconciliation with an intelligence layer</h1>
-      <p class="sub">Upload a purchase order. Chandlr fetches the latest price list from SharePoint, reconciles every line, and generates credit notes, re-invoices, and ERP staging &mdash; all inside Excel.</p>
+      <div class="section-label">AI Order Processing Platform</div>
+      <h1>From PO to ERP entry &mdash; in a single prompt</h1>
+      <p class="sub">Chandlr is your AI order operator. Attach any purchase order and it reconciles every price, generates credit notes, and produces ERP-ready staging &mdash; across web, Teams, and Excel.</p>
       <div class="hero-actions">
         <a href="guide.html" class="btn btn-white">Get Started</a>
-        <a href="manifest.xml" class="btn btn-ghost" download>Download Add-in</a>
+        <a href="manifest.xml" class="btn btn-ghost" download>Free Excel Add-in</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -286,9 +361,9 @@
           Chandlr <span>&mdash; Reconciliation Results</span>
         </div>
         <div class="mockup-tab-bar">
-          <div class="mockup-tab active">Results</div>
-          <div class="mockup-tab">CreditNote</div>
-          <div class="mockup-tab">ERPStaging</div>
+          <div class="mockup-tab active">Recon PO-041</div>
+          <div class="mockup-tab">Credit Note PO-041</div>
+          <div class="mockup-tab">ERP Entry PO-041</div>
           <div class="mockup-tab">Dashboard</div>
         </div>
         <div class="mockup-body">
@@ -344,16 +419,69 @@
   </div>
 </div>
 
+<!-- ── Architecture ── -->
+<div class="arch">
+  <div class="container">
+    <div class="section-label">Platform architecture</div>
+    <h2>Three surfaces. One intelligence layer.</h2>
+    <p class="sub">One shared backend powers every channel. Use whichever surface fits your workflow &mdash; the intelligence compounds across all of them.</p>
+
+    <div class="arch-diagram">
+      <div class="arch-api">
+        <div class="arch-api-title">Backend API</div>
+        <div class="arch-api-subtitle">Vercel &nbsp;&middot;&nbsp; Azure Document Intelligence</div>
+        <div class="arch-api-chips">
+          <span class="arch-api-chip">Document Ingestion</span>
+          <span class="arch-api-chip">ReconcilePO</span>
+          <span class="arch-api-chip">GenerateCreditNote</span>
+          <span class="arch-api-chip">DraftExceptionEmail</span>
+          <span class="arch-api-chip">GenerateERPStaging</span>
+          <span class="arch-api-chip">Price Intelligence</span>
+        </div>
+      </div>
+
+      <div class="arch-connector">
+        <div class="arch-connector-vline"></div>
+        <div class="arch-connector-hline"></div>
+        <div class="arch-connector-vl"></div>
+        <div class="arch-connector-vc"></div>
+        <div class="arch-connector-vr"></div>
+      </div>
+
+      <div class="arch-surfaces">
+        <div class="arch-surface primary">
+          <span class="arch-surface-icon">🌐</span>
+          <div class="arch-surface-name">Web SaaS</div>
+          <span class="arch-surface-tag">Primary &mdash; coming soon</span>
+          <p>Upload a PO and price list. Review outputs in the browser. No Excel, no installs.</p>
+        </div>
+        <div class="arch-surface">
+          <span class="arch-surface-icon">💬</span>
+          <div class="arch-surface-name">Teams Agent</div>
+          <span class="arch-surface-tag">M365 Copilot</span>
+          <p>Chat to Chandlr in Teams. Attach a PDF and say &ldquo;process this PO.&rdquo; Done.</p>
+        </div>
+        <div class="arch-surface free-tier">
+          <span class="arch-surface-icon">📊</span>
+          <div class="arch-surface-name">Excel Add-in</div>
+          <span class="arch-surface-tag">Free tier &mdash; live now</span>
+          <p>Runs inside your workbook. Outputs written directly as sheets. No cloud upload.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── Intelligence Layer (the moat) ── -->
 <div class="intel">
   <div class="container">
     <div class="section-label">The moat</div>
-    <h2>An intelligence layer on top of order processing</h2>
-    <p class="sub">Chandlr is both an Excel add-in and a Microsoft 365 Copilot agent. Click buttons or speak plain English.</p>
+    <h2>An intelligence layer that compounds over time</h2>
+    <p class="sub">Every reconciliation builds price history. Every channel shares it. The longer you run Chandlr, the smarter every PO assessment gets.</p>
     <div class="intel-cols">
       <div class="intel-item">
-        <h3>Copilot agent</h3>
-        <p>Registered as a declarative agent in Microsoft 365. One prompt kicks off the entire pipeline &mdash; from PO to ERP staging.</p>
+        <h3>Conversational workflow</h3>
+        <p>One prompt runs the entire pipeline &mdash; from PO to ERP staging. Use natural language from Teams, Copilot in Excel, or the web app.</p>
         <div class="intel-prompts">
           <div class="intel-prompt">"Process this PO end to end"</div>
           <div class="intel-prompt">"Assess this PO &mdash; accept or escalate?"</div>
@@ -362,8 +490,8 @@
         </div>
       </div>
       <div class="intel-item">
-        <h3>Smart extraction</h3>
-        <p>Upload CSV, Excel, or PDF. Chandlr auto-detects columns &mdash; SKU, price, qty, description, UOM &mdash; from any format. No templates. No mapping rules.</p>
+        <h3>Any format. Zero mapping.</h3>
+        <p>Upload CSV, Excel, or PDF. Azure Document Intelligence reads whatever arrives in your inbox &mdash; company headers, merged cells, sparse layouts. No templates. No manual mapping.</p>
       </div>
       <div class="intel-item">
         <h3>Price intelligence</h3>
@@ -377,12 +505,12 @@
 <div class="pipeline">
   <div class="container">
     <div class="section-label">Workflow</div>
-    <h2>Six steps. One workbook. Zero manual spreadsheets.</h2>
+    <h2>Six steps. One prompt. Zero manual spreadsheets.</h2>
     <div class="pipe-steps">
       <div class="pipe-step">
         <div class="pipe-dot">1</div>
         <h3>Capture</h3>
-        <p>Upload any PO format</p>
+        <p>Any PO format</p>
       </div>
       <div class="pipe-step">
         <div class="pipe-dot">2</div>
@@ -421,7 +549,7 @@
     <div class="feat-grid">
       <div class="feat">
         <h3>Works with any ERP</h3>
-        <p>SAP, Oracle, D365, NetSuite. Chandlr stages data in Excel &mdash; you enter it however you normally do. No API connectors.</p>
+        <p>SAP, Oracle, D365, NetSuite. Chandlr stages data in a clean sheet &mdash; you enter it however you normally do. No API connectors required.</p>
       </div>
       <div class="feat">
         <h3>Prefix SKU matching</h3>
@@ -429,68 +557,86 @@
       </div>
       <div class="feat">
         <h3>SharePoint price lists</h3>
-        <p>The Copilot agent automatically fetches the latest price list from your team&rsquo;s SharePoint. Always up to date. No manual downloads.</p>
+        <p>The Teams agent automatically fetches the latest price list from your team&rsquo;s SharePoint. Always up to date. No manual downloads.</p>
       </div>
       <div class="feat">
         <h3>Full audit trail</h3>
-        <p>Results, credit notes, re-invoices, ERP staging, and price history &mdash; all saved as sheets in the workbook.</p>
+        <p>Every output shows which ERP record matched each line. Results, credit notes, re-invoices, ERP staging &mdash; all preserved for review.</p>
       </div>
       <div class="feat">
         <h3>Data quality gate</h3>
-        <p>9 validation rules catch duplicates, missing prices, quantity outliers, and line total mismatches before reconciliation.</p>
+        <p>9 validation rules catch duplicates, missing prices, quantity outliers, and line total mismatches before reconciliation runs.</p>
       </div>
       <div class="feat">
-        <h3>Output stays in your workbook</h3>
-        <p>All results, credit notes, re-invoices, and staging sheets are written directly to your Excel workbook. Nothing sent to external servers.</p>
+        <h3>ACCEPT / REVIEW / ESCALATE</h3>
+        <p>After every reconciliation, Chandlr gives a risk recommendation based on exception rate, exposure, and historical patterns for that customer.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ── Install ── -->
-<div class="install">
+<!-- ── 3 Ways to Use ── -->
+<div class="surfaces">
   <div class="container">
-    <div class="section-label">Setup</div>
-    <h2>Up and running in 2 minutes</h2>
-    <div class="install-steps">
-      <div class="install-step">
-        <div class="install-num">1</div>
-        <strong>Download</strong>
-        <p>One XML file. No installers.</p>
+    <div class="section-label">Three ways to access</div>
+    <h2>Choose your surface</h2>
+    <p class="sub">All three connect to the same backend. Start with the Excel add-in today, move to Teams or the web app as they become available.</p>
+    <div class="surface-cards">
+
+      <div class="surface-card soon">
+        <span class="surface-badge badge-soon">Coming soon</span>
+        <h3>Web App</h3>
+        <p class="surface-desc">The simplest way to use Chandlr. No Excel, no Teams, no installs.</p>
+        <ul class="surface-steps">
+          <li>Upload PO (PDF, CSV, Excel)</li>
+          <li>Upload or link price list</li>
+          <li>Review reconciliation results</li>
+          <li>Download credit note, re-invoice, ERP staging</li>
+        </ul>
       </div>
-      <div class="install-step">
-        <div class="install-num">2</div>
-        <strong>Upload in Excel</strong>
-        <p>Insert &rarr; Office Add-ins &rarr; Upload.</p>
+
+      <div class="surface-card soon">
+        <span class="surface-badge badge-soon">Requires M365 Copilot</span>
+        <h3>Teams Agent</h3>
+        <p class="surface-desc">Runs the entire workflow from a Teams chat. Attach any PO and Chandlr does the rest.</p>
+        <ul class="surface-steps">
+          <li>Open Chandlr in Teams sidebar</li>
+          <li>Say &ldquo;Process this PO&rdquo; and attach the file</li>
+          <li>Chandlr fetches the price list from SharePoint</li>
+          <li>Get results, risk assessment, and outputs in chat</li>
+        </ul>
       </div>
-      <div class="install-step">
-        <div class="install-num">3</div>
-        <strong>Open Chandlr</strong>
-        <p>Click the Chandlr tab in the ribbon.</p>
+
+      <div class="surface-card">
+        <span class="surface-badge badge-free">Free &mdash; live now</span>
+        <h3>Excel Add-in</h3>
+        <p class="surface-desc">Runs directly inside your workbook. Outputs written as sheets. Nothing sent externally.</p>
+        <ul class="surface-steps">
+          <li>Download manifest.xml (one file)</li>
+          <li>Upload via Insert &rarr; Office Add-ins</li>
+          <li>Open Chandlr from the ribbon</li>
+          <li>Use task pane or Copilot agent in Excel</li>
+        </ul>
       </div>
-      <div class="install-step">
-        <div class="install-num">4</div>
-        <strong>Reconcile</strong>
-        <p>Use the task pane, or say &ldquo;Process this PO end to end&rdquo; to Copilot. The Copilot tab in the pane has one-click prompts.</p>
-      </div>
+
     </div>
   </div>
 </div>
 
 <!-- ── CTA ── -->
-<div class="cta">
-  <h2>Process your first PO in under a minute</h2>
-  <p>Install the add-in, upload a purchase order, and see reconciliation results in seconds.</p>
+<div class="cta" id="waitlist">
+  <h2>Start processing POs smarter today</h2>
+  <p>The Excel add-in is free and live now. Teams and web app coming soon.</p>
   <div class="cta-actions">
     <a href="guide.html" class="btn btn-white">Read the Guide</a>
-    <a href="manifest.xml" class="btn btn-ghost" download>Download Add-in</a>
+    <a href="manifest.xml" class="btn btn-ghost" download>Download Free Add-in</a>
   </div>
-  <p class="privacy">All data stays in your Excel workbook. Nothing is sent externally.</p>
+  <p class="privacy">Excel add-in: all data stays in your workbook. Nothing sent externally.</p>
 </div>
 
 <!-- ── Footer ── -->
 <div class="footer">
-  Chandlr &mdash; AI-powered order processing inside Excel.<br>
+  Chandlr &mdash; AI-powered order processing platform.<br>
   Questions? <a href="mailto:hello@chandlr.com">hello@chandlr.com</a>
 </div>
 
