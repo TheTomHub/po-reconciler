@@ -292,13 +292,17 @@
 
         <div class="prompt-group">
           <p class="prompt-group-label">Step by step</p>
-          <p class="prompt-group-hint">Run in order. Reconcile before generating outputs.</p>
-          <button class="prompt-card" data-prompt="Extract PO data">
+          <p class="prompt-group-hint">Run in order. Reconcile before generating outputs. Add "from sheet [name]" to target a specific sheet.</p>
+          <button class="prompt-card" data-prompt="Extract PO data from the active sheet">
             <span class="prompt-text">Extract PO data</span>
             <span class="prompt-copy-icon">⧉</span>
           </button>
           <button class="prompt-card" data-prompt="Reconcile PO">
             <span class="prompt-text">Reconcile PO</span>
+            <span class="prompt-copy-icon">⧉</span>
+          </button>
+          <button class="prompt-card" data-prompt="Assess the risk on this PO">
+            <span class="prompt-text">Assess the risk on this PO</span>
             <span class="prompt-copy-icon">⧉</span>
           </button>
           <button class="prompt-card" data-prompt="Generate credit note and re-invoice for exceptions">
@@ -324,10 +328,6 @@
           </button>
           <button class="prompt-card" data-prompt="Which SKUs have recurring price exceptions?">
             <span class="prompt-text">Which SKUs have recurring price exceptions?</span>
-            <span class="prompt-copy-icon">⧉</span>
-          </button>
-          <button class="prompt-card" data-prompt="Assess the risk on this PO">
-            <span class="prompt-text">Assess the risk on this PO</span>
             <span class="prompt-copy-icon">⧉</span>
           </button>
           <button class="prompt-card" data-prompt="Generate a price intelligence dashboard from my reconciliation history.">
