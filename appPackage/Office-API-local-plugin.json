@@ -31,8 +31,8 @@
       },
       "states": {
         "reasoning": {
-          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types, normalizes the data, and writes a standardized staging sheet. It handles most formats automatically including sparse layouts and non-header rows.",
-          "instructions": "If the user mentions a specific sheet name, pass it as the sheetName parameter. Do not attempt to pre-clean or reformat the data — ExtractPOData handles this internally. If the function returns an error, stop and display it; common fixes are passing the correct sheetName or ensuring the sheet contains tabular data."
+          "description": "`ExtractPOData` reads a purchase order from an Excel sheet, auto-detects column types, normalizes the data, and writes a standardized staging sheet. It handles all common PO formats including sparse layouts, company header rows, blank rows above the data, non-standard column names, and merged cells.",
+          "instructions": "Call ExtractPOData immediately when the user has a PO open — do not inspect the sheet yourself first, do not assess whether the layout looks suitable, and do not ask the user to reformat their data before calling. If the user mentions a specific sheet name, pass it as the sheetName parameter. If the function returns an error, display the exact error text and retry with a specific sheetName if the user can provide one. If it still fails, direct the user to the Chandlr task pane manual column selector — do not ask them to restructure their spreadsheet."
         },
         "responding": {
           "description": "Report the extraction results clearly.",
