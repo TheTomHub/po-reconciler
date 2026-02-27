@@ -1,0 +1,33 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "id": "424de98e-17e2-4fed-8115-791671162f90",
+  "version": "2.3.0",
+  "name": {
+    "short": "Chandlr",
+    "full": "Chandlr — Order Processing Suite"
+  },
+  "description": {
+    "short": "PO reconciliation in Teams — exceptions, credit notes, ERP staging",
+    "full": "Reconcile purchase orders against ERP pricing directly in Teams. Chandlr finds your PO and price list on SharePoint, compares prices per SKU, and returns exceptions, a credit note, re-invoice, ERP staging sheet, and a ready-to-send exception email — all in one message."
+  },
+  "developer": {
+    "name": "Chandlr",
+    "websiteUrl": "https://thetomhub.github.io/po-reconciler",
+    "privacyUrl": "https://thetomhub.github.io/po-reconciler",
+    "termsOfUseUrl": "https://thetomhub.github.io/po-reconciler"
+  },
+  "icons": {
+    "outline": "assets/outline.png",
+    "color": "assets/color.png"
+  },
+  "accentColor": "#1F4E79",
+  "copilotAgents": {
+    "declarativeAgents": [
+      {
+        "id": "POReconcilerAgent",
+        "file": "declarativeAgent.json"
+      }
+    ]
+  }
+}
