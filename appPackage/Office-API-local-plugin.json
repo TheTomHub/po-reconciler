@@ -2,7 +2,7 @@
   "$schema": "https://developer.microsoft.com/json-schemas/copilot/plugin/v2.4/schema.json",
   "schema_version": "v2.4",
   "name_for_human": "Chandlr",
-  "description_for_human": "Reconciles purchase orders against ERP pricing. Give it a PO file and a price list from SharePoint — it returns exceptions, credit note, re-invoice, ERP staging, and a ready-to-send exception email.",
+  "description_for_human": "Reconcile POs against ERP pricing. Returns exceptions, credit note, re-invoice, and ERP staging.",
   "description_for_model": "Use Chandlr when the user wants to reconcile, process, check, or validate a purchase order against ERP or agreed prices. The user will provide (or you will find on SharePoint) a PO file and a price list file. Always call ReconcilePO with SharePoint or OneDrive download URLs for both files — never attempt to reconcile prices yourself. Chandlr handles all common PO formats including sparse layouts, company header rows, and non-standard column names.",
   "namespace": "chandlr",
   "functions": [
@@ -23,7 +23,7 @@
           "tolerance": {
             "type": "number",
             "description": "Price tolerance in currency units. Differences within this amount are Tolerance (minor), not Exception (material). Default: 0.02",
-            "default": 0.02
+            "default": "0.02"
           },
           "currency": {
             "type": "string",
@@ -56,7 +56,8 @@
         "type": "None"
       },
       "spec": {
-        "url": "https://chandlr-api.vercel.app/openapi.json"
+        "url": "apiSpecificationFile/openapi.json",
+        "progress_style": "ShowUsageWithInput"
       },
       "run_for_functions": ["ReconcilePO"]
     }
